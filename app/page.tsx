@@ -1,103 +1,121 @@
-import Image from "next/image";
+"use client";
+import { IoRocketOutline } from "react-icons/io5";
+import { TbBrandSpeedtest } from "react-icons/tb";
+import { FaArrowTrendUp } from "react-icons/fa6";
+import { useState } from "react";
+import NavBar from "@/components/NavBa/NavBar";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const home_page_texts = [
+    { text: "A Website for my dream business", color: "bg-cyan-500", svg: <FaArrowTrendUp /> },
+    { text: "A habit tracker to reach my goals", color: "bg-pink-500", svg: <TbBrandSpeedtest /> },
+    { text: "An educational app for my kids", color: "bg-yellow-500", svg: <IoRocketOutline /> },
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const default_link = "https://cdn.sanity.io/images/bj34pdbp/migration/3846937448210f98bd123b0f82f004c2c3e6d241-1440x1040.png?w=1440&q=90&fit=clip&auto=format";
+  const images_link = [
+    "https://cdn.sanity.io/images/bj34pdbp/migration/5ddc88f5c16081bd0c5f767e32d489f9113ac854-1600x1200.png?w=1600&q=90&auto=format",
+    "https://cdn.sanity.io/images/bj34pdbp/migration/951c3e3b9f04c0086d81580652699895fc118864-1600x1200.png?w=1600&q=90&auto=format",
+    "https://cdn.sanity.io/images/bj34pdbp/migration/7cb277f6ca67b05aa73508e31c367c464d99a707-1601x1200.png?w=1601&q=90&auto=format"
+  ];
+
+  const baseImage =
+    "https://cdn.sanity.io/images/bj34pdbp/migration/242638fc2e0a4a9f7ff06b632f3968a6cfbf97ae-800x600.png?w=800&q=90&fit=clip&auto=format";
+
+  const [currentImage, setCurrentImage] = useState<string | null>(default_link);
+  const [hoverColor, setHoverColor] = useState<string>("");
+
+  return (
+    <>
+      <NavBar />
+      <div className="grid grid-cols-2 p-20">
+        {/* Text Side */}
+        <div>
+          <div className="flex flex-col max-w-2xl justify-center">
+            <div className="ml-13  text-white font-bold text-4xl  font-sans w-lg text-center ">
+              Turn your ideas into apps  with AI.
+            </div>
+            <div className="text-white font-semibold text-2xl text-center">
+              What do you want to create?
+            </div>
+          </div>
+          <div className="flex flex-col items-center space-y-4 mt-6">
+            {home_page_texts.map((item, index) => (
+              <Button
+                key={index}
+                svg={item.svg}
+                text={item.text}
+                color={item.color}
+                onHover={() => {
+                  setCurrentImage(images_link[index]);
+                  setHoverColor(item.color);
+                }}
+                onLeave={() => {
+                  setCurrentImage(default_link);
+                  setHoverColor("");
+                }}
+              />
+            ))}
+
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Image Side */}
+        <div className="relative flex justify-center items-center">
+          {/* Base Image */}
+          <img
+            src={baseImage}
+            alt="Base Image"
+            className={`w-[100%] h-auto relative ${hoverColor}`}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+          {/* Hover Image (Centered) */}
+          {currentImage && (
+            <div className="absolute top-[10%] left-[10%] w-[80%] h-[80%] transition-opacity delay-100 duration-300 animate-fadeIn ">
+              <div className={`absolute inset-0  opacity-50 transition-all duration-300`}
+              />
+              <img
+                src={currentImage}
+                alt="Displayed Image"
+                className="w-full h-full object-cover rounded-lg animate-fadeIn"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ✅ Button Component with Hover Effect
+function Button({
+  text,
+  color,
+  svg,
+  onHover,
+  onLeave,
+}: {
+  text: string;
+  color: string;
+  svg: any;
+  onHover: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      className={` focus:ring-gray-800 bg-white border-gray-700 p-3 pr-6 pl-6 mt-3
+      text-gray-900  me-2 mb-2 rounded-full text-lg font-semibold hover:${color} cursor-pointer hover:animate-fadeIn animate-fadeIn `}
+    >
+      <div className="flex justify-center items-center">
+        <div className="p-1 pr-2">
+          {svg}
+        </div>
+        {text}
+      </div>
+    </button>
+
   );
 }
