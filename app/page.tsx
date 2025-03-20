@@ -35,11 +35,11 @@ export default function Home() {
             <div className="ml-13  text-white font-bold text-4xl  font-sans w-lg text-center ">
               Turn your ideas into apps  with AI.
             </div>
-            <div className="text-white font-semibold text-2xl text-center">
+            <div className="text-white font-semibold text-2xl text-center mt-10">
               What do you want to create?
             </div>
           </div>
-          <div className="flex flex-col items-center space-y-4 mt-6">
+          <div className="flex flex-col items-center space-y-4 mt-4">
             {home_page_texts.map((item, index) => (
               <Button
                 key={index}
@@ -66,7 +66,7 @@ export default function Home() {
           <img
             src={baseImage}
             alt="Base Image"
-            className={`w-[100%] h-auto relative ${hoverColor}`}
+            className={`w-[100%] h-auto relative ${hoverColor}  animation-fadeIn`}
           />
 
           {/* Hover Image (Centered) */}
@@ -87,7 +87,7 @@ export default function Home() {
   );
 }
 
-// ✅ Button Component with Hover Effect
+//  Button Component with Hover Effect
 function Button({
   text,
   color,
@@ -106,14 +106,16 @@ function Button({
       type="button"
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      className={` focus:ring-gray-800 bg-white border-gray-700 p-3 pr-6 pl-6 mt-3
+      className={` focus:ring-gray-800 bg-white border-gray-700  pr-6 pl-6 pt-2 pb-2 mt-3
       text-gray-900  me-2 mb-2 rounded-full text-lg font-semibold hover:${color} cursor-pointer hover:animate-fadeIn animate-fadeIn `}
     >
       <div className="flex justify-center items-center">
         <div className="p-1 pr-2">
           {svg}
         </div>
-        {text}
+        <div className="text-xl font-semibold ">
+          {text}
+        </div>
       </div>
     </button>
 
