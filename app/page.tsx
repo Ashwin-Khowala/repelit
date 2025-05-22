@@ -3,7 +3,7 @@ import { IoRocketOutline } from "react-icons/io5";
 import { TbBrandSpeedtest } from "react-icons/tb";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { useState } from "react";
-import NavBar from "@/components/NavBa/NavBar";
+import NavBar from "@/components/NavBar/NavBar";
 
 export default function Home() {
   const home_page_texts = [
@@ -28,18 +28,17 @@ export default function Home() {
   return (
     <>
       <NavBar />
-      <div className="grid grid-cols-2 p-20">
+      <div className="grid grid-cols-2 p-20 mt-10">
         {/* Text Side */}
-        <div>
-          <div className="flex flex-col max-w-2xl justify-center">
-            <div className="ml-13  text-white font-bold text-4xl  font-sans w-lg text-center ">
-              Turn your ideas into apps  with AI.
+        <div className="mt-6">
+          <div className="flex flex-col max-w-2xl justify-center w-full items-center">
+            <div className="ml-13  text-white font-semibold text-4xl  font-sans w-md text-center ">
             </div>
             <div className="text-white font-semibold text-2xl text-center mt-10">
               What do you want to create?
             </div>
           </div>
-          <div className="flex flex-col items-center space-y-4 mt-4">
+          <div className="flex flex-col items-center space-y-4 mt-4 animation-FadeIn">
             {home_page_texts.map((item, index) => (
               <Button
                 key={index}
@@ -106,7 +105,7 @@ function Button({
       type="button"
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      className={` focus:ring-gray-800 bg-white border-gray-700  pr-6 pl-6 pt-2 pb-2 mt-3
+      className={` focus:ring-gray-800 bg-white border-gray-700  pr-6 pl-6 pt-3 pb-3 mt-3
       text-gray-900  me-2 mb-2 rounded-full text-lg font-semibold hover:${color} cursor-pointer hover:animate-fadeIn animate-fadeIn `}
     >
       <div className="flex justify-center items-center">
