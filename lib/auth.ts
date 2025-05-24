@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { JWT } from "next-auth/jwt";
+import { debug } from "console";
 
 declare module "next-auth" {
     interface Session {
@@ -33,14 +34,14 @@ export const NEXT_AUTH_CONFIG = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID ?? "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-            // profile(profile, tokens) {
-            //     return {
-            //         id: profile.sub,
-            //         name: profile.name,
-            //         email: profile.email,
-            //         image: profile.picture,
-            //     }
-            // },
+            profile(profile, tokens) {
+                return {
+                    id: profile.sub,
+                    name: profile.name,
+                    email: profile.email,
+                    image: profile.picture,
+                }
+            },
         }),
         CredentialsProvider({
             name: 'Credentials',
@@ -61,22 +62,19 @@ export const NEXT_AUTH_CONFIG = {
     ],
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXTAUTH_SECRET,
+    debug: true,
     callbacks: {
-        jwt: async ({ user, token }: {
-            user?: DefaultUser,
-            token: JWT
-        }) => {
+        jwt: async ({ user, token }:any) => {
+            console.log("JWT", user, token);
             if (user) {
                 token.uid = user.id;
             }
             return token;
         },
-        session: ({ session, token }:{
-            session: Session,
-            token: JWT 
-        }) => {
-            if (session.user) {
-                session.user.id = token.uid as string;
+        session: ({ session, token, user }:any) => {
+            console.log("Session", session, token, user);
+            if (token&&session.user) {
+                session.user.id = token.uid;
             }
             return session
         }
