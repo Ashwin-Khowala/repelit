@@ -37,15 +37,16 @@ class AzureStorageClient {
             if (!language) {
                 throw new Error("Language is required to get the base image");
             }
-
             const prefix = `base/${language}/`;
+
             const files: { [key: string]: string } = {};
 
             for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
+                console.log('Blob found:', blob.name);
                 const blobClient = this.containerClient.getBlockBlobClient(blob.name);
                 const response = await blobClient.download();
 
-                const relativePath = blob.name.substring(prefix.length);
+                const relativePath = blob.name.trim().substring(prefix.length);
                 const chunks = [];
 
                 for await (const chunk of response.readableStreamBody) {
@@ -53,8 +54,10 @@ class AzureStorageClient {
                 }
 
                 files[relativePath] = Buffer.concat(chunks).toString('utf-8');
-                return files;
+                console.log(`File ${relativePath} downloaded successfully`);
+                console.log(`Content of ${relativePath}:`, files[relativePath]);
             }
+            return files;
         } catch (error) {
             console.error('Error getting base template:', error);
             throw error;
@@ -68,8 +71,12 @@ class AzureStorageClient {
                 throw new Error("Language,  project name and username  are required to create a project");
             }
 
-            const prefix = `code/${username}/${projectName}/`;
+            const prefix = `code/${username}/${projectName}`;
             const baseTemplate: { [key: string]: string } = await this.getBaseImage(language) || {};
+
+            // console.log('Base template:', baseTemplate);
+            console.log("Base template files:", Object.keys(baseTemplate));
+
 
             for (const [fileName, content] of Object.entries(baseTemplate)) {
                 await this.uploadFile(`${prefix}/${fileName}`, content);
@@ -220,7 +227,7 @@ class AzureStorageClient {
         }
     }
 
-      // Delete project
+    // Delete project
     async deleteProject(username: string, projectName: string) {
         if (!username || !projectName) {
             throw new Error("Username and project name are required to delete a project");
@@ -239,7 +246,7 @@ class AzureStorageClient {
             console.error('Error deleting project:', error);
             throw error;
         }
-    } 
+    }
 
     // Update file in project
     async updateProjectFile(username: string, projectName: string, fileName: string, content: string) {
@@ -275,24 +282,24 @@ class AzureStorageClient {
 
     // Get available languages from the base directory
     async getAvailableLanguages(): Promise<string[]> {
-    try {
-      const prefix = 'base/';
-      const languages = new Set<string>();
-      
-      for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
-        const relativePath = blob.name.substring(prefix.length);
-        const language = relativePath.split('/')[0];
-        if (language) {
-          languages.add(language);
+        try {
+            const prefix = 'base/';
+            const languages = new Set<string>();
+
+            for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
+                const relativePath = blob.name.substring(prefix.length);
+                const language = relativePath.split('/')[0];
+                if (language) {
+                    languages.add(language);
+                }
+            }
+
+            return Array.from(languages);
+        } catch (error) {
+            console.error('Error getting available languages:', error);
+            throw error;
         }
-      }
-      
-      return Array.from(languages);
-    } catch (error) {
-      console.error('Error getting available languages:', error);
-      throw error;
     }
-  }
 
     getMimeType(fileName: string): string {
         const extension: string = fileName.split('.').pop()?.toLowerCase() || "";
