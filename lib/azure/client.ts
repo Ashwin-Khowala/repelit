@@ -1,5 +1,4 @@
 import { BlobServiceClient } from "@azure/storage-blob";
-import { use } from "react";
 
 class AzureStorageClient {
     private connectionString: string;
@@ -9,7 +8,7 @@ class AzureStorageClient {
     constructor() {
         this.connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || "";
         this.containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'coding-platform';
-        if (!this.connectionString) {
+        if (this.connectionString== "") {
             throw new Error("AZURE_STORAGE_CONNECTION_STRING is not set");
         }
 
@@ -24,7 +23,6 @@ class AzureStorageClient {
             await this.containerClient.createIfNotExists({
                 access: 'private'
             });
-            console.log('Container initialized successfully');
         } catch (error) {
             console.error('Error initializing container:', error);
             throw error;
@@ -42,7 +40,6 @@ class AzureStorageClient {
             const files: { [key: string]: string } = {};
 
             for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
-                console.log('Blob found:', blob.name);
                 const blobClient = this.containerClient.getBlockBlobClient(blob.name);
                 const response = await blobClient.download();
 
@@ -54,8 +51,7 @@ class AzureStorageClient {
                 }
 
                 files[relativePath] = Buffer.concat(chunks).toString('utf-8');
-                console.log(`File ${relativePath} downloaded successfully`);
-                console.log(`Content of ${relativePath}:`, files[relativePath]);
+            
             }
             return files;
         } catch (error) {
@@ -65,7 +61,7 @@ class AzureStorageClient {
     }
 
     // create new project in the specified language
-    async createNewProject(username: string, language: string, projectName: string) {
+    async createNewProject(username: string, projectName: string, language: string) {
         try {
             if (!language || !projectName || !username) {
                 throw new Error("Language,  project name and username  are required to create a project");
@@ -73,10 +69,6 @@ class AzureStorageClient {
 
             const prefix = `code/${username}/${projectName}`;
             const baseTemplate: { [key: string]: string } = await this.getBaseImage(language) || {};
-
-            // console.log('Base template:', baseTemplate);
-            console.log("Base template files:", Object.keys(baseTemplate));
-
 
             for (const [fileName, content] of Object.entries(baseTemplate)) {
                 await this.uploadFile(`${prefix}/${fileName}`, content);
@@ -123,7 +115,6 @@ class AzureStorageClient {
                 }
             };
             await blobBlockClient.upload(content, Buffer.byteLength(content), uploadOptions);
-            console.log(`File uploaded successfully: ${blobName}`);
             return {
                 success: true,
                 blobName
@@ -155,8 +146,8 @@ class AzureStorageClient {
     }
 
     // get all the project files
-    async getProjectFiles(username: string, language: string, projectName: string): Promise<{ [key: string]: string }> {
-        if (!username || !language || !projectName) {
+    async getProjectFiles(username: string, projectName: string, language?: string): Promise<{ [key: string]: string }> {
+        if (!username || !projectName) {
             throw new Error("Username, language and project name are required to get project files");
         }
         try {

@@ -1,11 +1,9 @@
-import NextAuth, { DefaultUser, DefaultSession, Session} from "next-auth";
+import { DefaultUser, DefaultSession} from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
-import { JWT } from "next-auth/jwt";
-import { debug } from "console";
 
 declare module "next-auth" {
     interface Session {
@@ -62,17 +60,14 @@ export const NEXT_AUTH_CONFIG = {
     ],
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXTAUTH_SECRET,
-    debug: true,
     callbacks: {
         jwt: async ({ user, token }:any) => {
-            console.log("JWT", user, token);
             if (user) {
                 token.uid = user.id;
             }
             return token;
         },
         session: ({ session, token, user }:any) => {
-            console.log("Session", session, token, user);
             if (token&&session.user) {
                 session.user.id = token.uid;
             }

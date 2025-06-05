@@ -1,14 +1,20 @@
 "use client"
 import Image from "next/image";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useState } from "react";
+import { InputBox } from "@/components/ui/InputBox";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { GoogleButton } from "@/components/auth_buttons";
-
+import { useSession } from "next-auth/react";
 
 export default function Signup() {
+    const { data: session, status } = useSession();
+    if (status === "loading") {
+        return <div>Loading...</div>;
+    }
+    if (session) {
+        // If the user is already logged in, redirect them to the home page
+        window.location.href = "/dashboard";
+        return null;
+    }
     return (
         <div className="grid grid-cols-2 h-screen">
             <div className="relative col-span-1 bg-white ">
@@ -27,7 +33,7 @@ export default function Signup() {
                         Log in to your Account
                     </div>
                     <div className="flex flex-col w-full items-center mt-[2vh]">
-                        <InputBox type="email" label="Email or Username" />
+                        <InputBox type="email" label="Email or Username" svg={false} />
                         <InputBox type="password" label="Password" svg={true} />
                         <button
                             type="button"
@@ -59,31 +65,3 @@ export default function Signup() {
         </div>
     );
 }
-
-export function InputBox({ type, label, svg }: { type: string; label: string; svg?: boolean; }) {
-    const [showPassword, setShowPassword] = useState(false);
-
-    return (
-        <div className="flex flex-col space-y-1 p-2 relative">
-            <label htmlFor={type} className="text-gray-700 text-sm font-medium">
-                {label}
-            </label>
-            <div className="relative">
-                <input
-                    type={svg && showPassword ? "text" : type}
-                    id={type}
-                    className="bg-[#f3f3f3] w-[25vw] h-[7vh] p-2 border border-gray-300 rounded-md focus:ring-1 outline-none pr-10"
-                />
-                {svg && (
-                    <button
-                        type="button"
-                        className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-}   

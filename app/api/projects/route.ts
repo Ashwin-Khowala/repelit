@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import AzureStorageClient, { azureStorage } from '@/lib/azure/client';
+import { azureStorage } from '@/lib/azure/client';
 import { getServerSession } from 'next-auth/next';
 import { NEXT_AUTH_CONFIG } from '@/lib/auth';
 
@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
 
         const result = await azureStorage.createNewProject(
             userId,
-            language,
-            projectName
+            projectName,
+            language
         );
 
         if (!result) {

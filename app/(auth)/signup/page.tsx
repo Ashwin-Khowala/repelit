@@ -4,8 +4,7 @@ import Image from "next/image"
 import Link from "next/link";
 import { useState } from "react";
 import { IoIosMail } from "react-icons/io";
-import { InputBox } from "../signin/page";
-import { getProviders, signIn } from "next-auth/react";
+import { InputBox } from "@/components/ui/InputBox";
 
 export default function Signup() {
     const [showEmailAuth, setShowEmailAuth] = useState(false);
