@@ -1,6 +1,7 @@
 "use client";
 
 import { MonacoEditor } from "@/components/Editor";
+import { FileExplorer } from "@/components/FileExplorer";
 import { useEffect, useState, use } from "react";
 // import { PsudoTerminal } from "@/components/PsudoTerminal";
 // import { useParams } from "next/navigation";
@@ -13,7 +14,7 @@ export default function EditorPage({ params }: {
     projectId: string
   }>;
 }) {
-  const language = "React";
+  // const language = "React";
   const { userId, projectId } = use(params);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
@@ -43,110 +44,72 @@ export default function EditorPage({ params }: {
     fetchProject();
   }, [userId, projectId]);
 
-  if (error) return <div>{error}</div>;
-  if (!project) return <div>Loading project files...</div>;
+  const handleFileSelect = (filePath: string) => {
+    setSelectedFile(filePath);
+    setFileContent(project?.[filePath] || ""); // load content from project
+  };
 
+  const handleEditorChange = (newValue: string | undefined) => {
+    if (selectedFile && typeof newValue === "string") {
+      setProject((prev) => ({
+        ...prev!,
+        [selectedFile]: newValue,
+      }));
+      setFileContent(newValue); // Update local state as well
+    }
+  };
+
+  if (error) return <div className="text-red-500 p-4">{error}</div>;
+  if (!project) return <div className="p-4">Loading project files...</div>;
+
+  console.log("path :", selectedFile);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-900">
       {/* Sidebar component for project navigation */}
-      <div className="w-[15vw] resize-x overflow-auto border-r rounded-md">
-        <ListAllFiles
+      <div className="w-[15vw] resize-x overflow-auto border-r border-gray-700">
+        <FileExplorer
           project={project}
-          onSelectFile={(filePath) => {
-            setSelectedFile(filePath);
-            setFileContent(project[filePath]); // load content from blob
+          onSelectFile={handleFileSelect}
+          selectedFile={selectedFile}
+          onFileCreate={(path, content) => {
+            // Handle new file creation
+            setProject(prev => ({ ...prev, [path]: content || '' }));
+          }}
+          onFileDelete={(path) => {
+            // Handle file deletion
+            const newProject = { ...project };
+            delete newProject[path];
+            setProject(newProject);
+          }}
+          onFileRename={(oldPath, newPath) => {
+            // Handle file renaming
+            const newProject = { ...project };
+            newProject[newPath] = newProject[oldPath];
+            delete newProject[oldPath];
+            setProject(newProject);
+          }}
+          onFolderCreate={(folderPath) => {
+            // Handle folder creation (you might want to create a placeholder file)
+            setProject(prev => ({ ...prev, [`${folderPath}/.gitkeep`]: '' }));
           }}
         />
       </div>
+
       {/* Editor component for writing code */}
-      <div className="w-[50vw] h-screen resize-x overflow-auto border-x rounded-md">
+      <div className="w-[50vw] h-screen resize-x overflow-auto border-x border-gray-700">
         <MonacoEditor
-          language={language}
+          fileName={selectedFile || "Untitled"}
+          language={selectedFile?.split('.').pop() || "text"}
           value={fileContent}
-          onChange={(newValue: string | undefined) => {
-            if (selectedFile && typeof newValue === "string") {
-              setProject((prev) => ({
-                ...prev!,
-                [selectedFile]: newValue,
-              }));
-              setFileContent(newValue); // Update local state as well
-            }
-          }}
+          onChange={handleEditorChange}
         />
       </div>
+
       {/* Terminal component for running commands */}
-      {/* <div className="w-[35vw] h-screen resize-x overflow-auto border-l rounded-md">
+      {/* <div className="w-[35vw] h-screen resize-x overflow-auto border-l border-gray-700">
         <PsudoTerminal socket={socket} />
       </div> */}
     </div>
-  );
-}
-
-function ListAllFiles({
-  project,
-  onSelectFile
-}: {
-  project: { [key: string]: string };
-  onSelectFile: (filePath: string) => void;
-}) {
-  const fileTree = buildFileTree(Object.keys(project));
-  return <TreeView tree={fileTree} onSelectFile={onSelectFile} />;
-}
-
-function buildFileTree(paths: string[]) {
-  const root: { [key: string]: any } = {};
-
-  for (const path of paths) {
-    const parts = path.split("/");
-    let current = root;
-
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      if (!current[part]) {
-        current[part] = i === parts.length - 1 ? null : {};
-      }
-      if (current[part] !== null) {
-        current = current[part];
-      }
-    }
-  }
-
-  return root;
-}
-
-function TreeView({ 
-  tree, 
-  path = "", 
-  onSelectFile 
-}: {
-  tree: { [key: string]: any };
-  path?: string;
-  onSelectFile: (filePath: string) => void;
-}) {
-  return (
-    <ul className="pl-4">
-      {Object.entries(tree).map(([name, value]) => {
-        const currentPath = path ? `${path}/${name}` : name;
-
-        return value === null ? (
-          <li key={name}>
-            <span
-              onClick={() => onSelectFile(currentPath)}
-              className="cursor-pointer text-white hover:underline"
-            >
-              📄 {name}
-            </span>
-          </li>
-        ) : (
-          <li key={name}>
-            <details>
-              <summary className="cursor-pointer text-blue-300">📂 {name}</summary>
-              <TreeView tree={value} path={currentPath} onSelectFile={onSelectFile} />
-            </details>
-          </li>
-        );
-      })}
-    </ul>
   );
 }

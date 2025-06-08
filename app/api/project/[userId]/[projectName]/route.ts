@@ -4,16 +4,19 @@ import { azureStorage } from "@/lib/azure/client";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string; projectName: string } }
+  { params }: { params: Promise<{ userId: string; projectName: string }> }
 ) {
     try {
         const session = await getServerSession(NEXT_AUTH_CONFIG);
         const userId = session?.user?.email || "";
 
-        if (userId==="") {
+        if (userId === "") {
             return new Response(JSON.stringify({ error: "User ID is required" }), { status: 400 });
         }
-        const { projectName } = params;
+
+        // Await params before destructuring
+        const resolvedParams = await params;
+        const { projectName } = resolvedParams;
         
         // console.log("Project Name:", projectName);
         
@@ -21,7 +24,7 @@ export async function GET(
             return new Response(JSON.stringify({ error: "Project name is required" }), { status: 400 });
         }
 
-        const project: { [key: string] : string } = await azureStorage.getProjectFiles(userId, projectName);
+        const project: { [key: string]: string } = await azureStorage.getProjectFiles(userId, projectName);
 
         // console.log("Fetched Project:", Object.keys(project));
         

@@ -2,10 +2,12 @@ import Editor from '@monaco-editor/react';
 import { useState, useRef } from 'react';
 
 export function MonacoEditor({
+    fileName,
     language,
     value,
     onChange
 }: {
+    fileName?: string;
     language: string;
     value?: string;
     onChange?: (value: string | undefined) => void;
@@ -16,6 +18,33 @@ export function MonacoEditor({
     const handleEditorDidMount = (editor: any, monaco: any) => {
         editorRef.current = editor;
         setIsLoading(false);
+
+        // Configure compiler options to be more lenient
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+            target: monaco.languages.typescript.ScriptTarget.Latest,
+            allowNonTsExtensions: true,
+            moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+            module: monaco.languages.typescript.ModuleKind.CommonJS,
+            noEmit: true,
+            esModuleInterop: true,
+            jsx: monaco.languages.typescript.JsxEmit.React,
+            reactNamespace: 'React',
+            allowJs: true,
+            typeRoots: ['node_modules/@types']
+        });
+
+        monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+            target: monaco.languages.typescript.ScriptTarget.Latest,
+            allowNonTsExtensions: true,
+            moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+            module: monaco.languages.typescript.ModuleKind.CommonJS,
+            noEmit: true,
+            esModuleInterop: true,
+            jsx: monaco.languages.typescript.JsxEmit.React,
+            reactNamespace: 'React',
+            allowJs: true,
+            typeRoots: ['node_modules/@types']
+        });
 
         // Configure Monaco editor options
         editor.updateOptions({
@@ -117,7 +146,7 @@ export function MonacoEditor({
                 { token: 'attribute.value', foreground: 'CE9178' },
             ],
             colors: {
-                'editor.background': '#10002b',
+                'editor.background': '#0D1117',
                 'editor.foreground': '#E6EDF3',
                 'editor.lineHighlightBackground': '#161B22',
                 'editor.selectionBackground': '#264F78',
@@ -156,34 +185,34 @@ export function MonacoEditor({
 
     const getLanguageForMonaco = (lang: string): string => {
         const languageMap: { [key: string]: string } = {
-            'NodeJs': 'javascript',
-            'JavaScript': 'javascript',
-            'TypeScript': 'typescript',
-            'React': 'typescript', // React typically uses JSX/TSX
-            'Next.js': 'typescript', // Next.js typically uses TypeScript/JSX
-            'Python': 'python',
-            'Java': 'java',
-            'C++': 'cpp',
-            'C': 'c',
+            'js': 'javascript',
+            "jsx": 'javascript',
+            'ts': 'typescript',
+            'tsx': 'typescript',
+            'py': 'python',
+            'java': 'java',
+            'cpp': 'cpp',
+            'c': 'c',
             'C#': 'csharp',
             'PHP': 'php',
             'Ruby': 'ruby',
-            'Go': 'go',
+            'go': 'go',
             'Rust': 'rust',
             'Swift': 'swift',
             'Kotlin': 'kotlin',
-            'HTML': 'html',
-            'CSS': 'css',
+            'html': 'html',
+            'css': 'css',
             'SCSS': 'scss',
-            'JSON': 'json',
-            'XML': 'xml',
+            'json': 'json',
+            'xml': 'xml',
             'SQL': 'sql',
             'Shell': 'shell',
             'Bash': 'bash',
             'PowerShell': 'powershell',
             'Dockerfile': 'dockerfile',
-            'YAML': 'yaml',
+            'yaml': 'yaml',
             'Markdown': 'markdown',
+            'gitignore': 'gitignore',
         };
         return languageMap[lang] || 'plaintext';
     };
@@ -199,7 +228,7 @@ export function MonacoEditor({
                         <div className="w-3 h-3 bg-[#28CA42] rounded-full"></div>
                     </div>
                     <span className="text-[#E6EDF3] text-sm font-medium ml-3">
-                        {language} Editor
+                        {fileName}
                     </span>
                 </div>
                 <div className="flex items-center space-x-2">

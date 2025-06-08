@@ -8,7 +8,7 @@ class AzureStorageClient {
     constructor() {
         this.connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || "";
         this.containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'coding-platform';
-        if (this.connectionString== "") {
+        if (this.connectionString == "") {
             throw new Error("AZURE_STORAGE_CONNECTION_STRING is not set");
         }
 
@@ -51,7 +51,7 @@ class AzureStorageClient {
                 }
 
                 files[relativePath] = Buffer.concat(chunks).toString('utf-8');
-            
+
             }
             return files;
         } catch (error) {
@@ -124,6 +124,35 @@ class AzureStorageClient {
             throw error;
         }
     }
+
+    async createFolderStructure(folderPath: string, folderName: string,username: string, projectName: string) {
+    if (!folderPath) {
+        throw new Error("Folder path is required");
+    }
+
+    if (!folderName) {
+        throw new Error("Folder name is required");
+    }
+
+    try {
+        const prefix = folderPath ? `code/${username}/${projectName}/${folderPath}/` : 'code/';
+        
+        // Create .gitkeep placeholder to maintain folder structure
+        const placeholderPath = `${prefix}${folderName}/.gitkeep`;
+        await this.uploadFile(placeholderPath, 'internal serever placeholder');
+        
+        console.log(`Folder structure created at: ${prefix}${folderName}/`);
+        
+        return {
+            success: true,
+            folderPath: `${prefix}${folderName}`
+        };
+
+    } catch (error) {
+        console.error('Error creating folder structure:', error);
+        throw error;
+    }
+}
 
     async downloadFile(blobName: string): Promise<string> {
         if (!blobName) {
