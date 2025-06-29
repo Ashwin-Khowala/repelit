@@ -218,7 +218,7 @@ export function MonacoEditor({
     };
 
     return (
-        <div className="relative w-full h-full bg-[#0D1117] border border-[#30363D] rounded-lg overflow-hidden">
+        <div className="relative w-full h-full bg-[#141414] border border-[#30363D] rounded-lg overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2 bg-[#161B22] border-b border-[#30363D]">
                 <div className="flex items-center space-x-2">

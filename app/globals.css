@@ -1,6 +1,6 @@
 @import "tailwindcss";
 :root{
-  background: #001021;
+  background: #141414;
 }
 @keyframes fadeIn {
   from { opacity: 0; }

@@ -242,7 +242,7 @@ export function FileExplorer({
     console.log(createPath);
 
     return (
-        <div className="w-full h-full bg-gray-900 text-white flex flex-col">
+        <div className="w-full h-full bg-[#141414] text-white flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
                 <div className="flex items-center justify-between mb-3">

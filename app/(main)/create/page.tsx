@@ -13,7 +13,7 @@ async function createProject(projectName: string, language: string, userId: stri
 
     console.log('User Email:', userId);
 
-    const response = await fetch('/api/projects', {
+    const response = await fetch('/api/create-projects', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

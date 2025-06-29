@@ -3,10 +3,12 @@
 import { MonacoEditor } from "@/components/Editor";
 import { FileExplorer } from "@/components/FileExplorer";
 import { useEffect, useState, use } from "react";
-// import { PsudoTerminal } from "@/components/PsudoTerminal";
+import {PsudoTerminal} from "@/components/PsudoTerminal";
 // import { useParams } from "next/navigation";
 // import { useSocket } from "@/hooks/useSocket";
 // import { Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+
 
 export default function EditorPage({ params }: {
   params: Promise<{
@@ -14,16 +16,24 @@ export default function EditorPage({ params }: {
     projectId: string
   }>;
 }) {
-  // const language = "React";
+  const [ socket, setSocket ] = useState<Socket | null>(null);
   const { userId, projectId } = use(params);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
+  
+  // extablishes a websocket connection using the projId and userId as Identifiers
+  useEffect(()=>{
+    const newSocket = io(`ws://${projectId}.${userId}.ashwinkhowala.com`);
+    setSocket(newSocket);
 
-  // const socket: Socket | null = useSocket(userId, projectId);
+    return () => {
+            newSocket.disconnect();
+        };
+  },[userId,projectId]);
 
-  // if (!socket) {
-  //   return <div>Loading...</div>;
-  // }
+  if (!socket) {
+    return <div>Loading...</div>;
+  }
 
   const [project, setProject] = useState<{ [key: string]: string }>();
   const [error, setError] = useState<string | null>(null);
@@ -107,9 +117,9 @@ export default function EditorPage({ params }: {
       </div>
 
       {/* Terminal component for running commands */}
-      {/* <div className="w-[35vw] h-screen resize-x overflow-auto border-l border-gray-700">
-        <PsudoTerminal socket={socket} />
-      </div> */}
+      <div className="w-[35vw] h-screen resize-x overflow-auto border-l border-gray-700">
+        <PsudoTerminal socket={socket}/>
+      </div>
     </div>
   );
 }
