@@ -24,7 +24,7 @@ export function initWs(httpServer: HttpServer) {
             return;
         }
         // Split the host by '.' and take the first part as replId
-        const [projId, userId, domain, tld] = host.split('.');
+        const [projId, userId,code,domain, tld] = host.split('.');
 
         if (!projId||!userId) {
             socket.disconnect();

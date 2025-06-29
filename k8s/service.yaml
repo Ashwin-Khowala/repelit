@@ -22,18 +22,21 @@ spec:
           image: mcr.microsoft.com/azure-cli
           command: ["/bin/sh", "-c"]
           args:
-            - >
-              az storage blob download-batch
-              --account-name your_storage_account
-              --container repl-code-service_name
-              --destination /workspace
-              --sas-token "$(SAS_TOKEN)" &&
-              echo "Resources copied from Azure Blob";
+            - |
+              export AZURE_STORAGE_CONNECTION_STRING="$AZURE_STORAGE_CONNECTION_STRING"
+              az storage blob download-batch \
+                --source "$AZURE_CONTAINER_NAME" \
+                --pattern "base/*" \
+                --destination /workspace && \
+              echo "Resources copied from Azure Blob"
           env:
-            - name: AZURE_STORAGE_ACCOUNT
-              value: "your_storage_account"
-            - name: SAS_TOKEN
-              value: "your_sas_token"
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: connection-string
+            - name: AZURE_CONTAINER_NAME
+              value: "coding-platform"
           volumeMounts:
             - name: workspace-volume
               mountPath: /workspace
@@ -47,7 +50,6 @@ spec:
             - name: workspace-volume
               mountPath: /workspace
           resources:
-            # Use ephemeral-storage to add space limits here
             requests:
               cpu: "1"
               memory: "1Gi"
@@ -65,7 +67,7 @@ spec:
     app: service_name
   ports:
     - protocol: TCP
-      name: web-socker-server
+      name: web-socket-server
       port: 3001
       targetPort: 3001
     - protocol: TCP
@@ -80,7 +82,6 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  # - host: service_name.peetcode.com
   - host: service_name.code.ashwinkhowala.com
     http:
       paths:
@@ -91,7 +92,6 @@ spec:
             name: service_name
             port:
               number: 3001
-  # - host: service_name.autogpt-cloud.com
   - host: service_name.out.ashwinkhowala.com
     http:
       paths:
@@ -101,4 +101,4 @@ spec:
           service:
             name: service_name
             port:
-              number: 3000 
+              number: 3000

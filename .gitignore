@@ -39,3 +39,41 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Kubernetes secrets - NEVER commit these
+*secret*.yaml
+*-secret.yaml
+secrets/
+.secrets/
+
+# Azure/Cloud config files
+azure-credentials.json
+service-account-key.json
+
+# Terraform state files (if using IaC)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Helm values with secrets
+values-prod.yaml
+values-production.yaml
+*-values-secret.yaml
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.bak
+*.backup

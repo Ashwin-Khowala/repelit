@@ -23,7 +23,7 @@ export default function EditorPage({ params }: {
   
   // extablishes a websocket connection using the projId and userId as Identifiers
   useEffect(()=>{
-    const newSocket = io(`ws://${projectId}.${userId}.ashwinkhowala.com`);
+    const newSocket = io(`ws://${projectId}.${userId}.code.ashwinkhowala.com`);
     setSocket(newSocket);
 
     return () => {
