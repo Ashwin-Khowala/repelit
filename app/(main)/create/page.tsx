@@ -31,7 +31,7 @@ async function createProject(projectName: string, language: string, userId: stri
 export default function Page() {
     const [language, setLanguage] = useState('NodeJs');
     const [projectName, setProjectName] = useState('');
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
 
     if (!session) {
         return <div>Please log in to create a project.</div>;

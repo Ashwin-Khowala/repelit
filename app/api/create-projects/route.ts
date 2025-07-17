@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { NEXT_AUTH_CONFIG } from '@/lib/auth';
 
 // fetch user projects
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession(NEXT_AUTH_CONFIG); 
         const userId = session?.user?.email || "";

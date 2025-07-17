@@ -40,3 +40,13 @@ export const saveFile = async (file: string, content: string): Promise<void> => 
         });
     });
 }
+
+export const createFolder = async (dir: string): Promise<void> => {
+    try {
+        await fs.promises.mkdir(dir, { recursive: true });
+        console.log("Directory created successfully:", dir);
+    } catch (error) {
+        console.error("Error creating directory:", error);
+        throw error;
+    }
+};

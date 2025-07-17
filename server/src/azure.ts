@@ -84,9 +84,9 @@ function createFolder(dirName: string): Promise<void> {
     });
 }
 
-export const saveToAzure = async (prefix: string, filePath: string, content: string): Promise<void> => {
+export const saveToAzure = async (filePath: string, content: string): Promise<void> => {
     try {
-        const blobName = `${prefix}/${filePath}`;
+        const blobName = `${filePath}`;
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         
         await blockBlobClient.upload(content, content.length);
