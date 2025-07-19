@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useAtomValue } from "jotai";
+import { userSessionAtom } from "@/store/atoms/userId";
 
 async function createProject(projectName: string, language: string, userId: string) {
     if (!projectName || !language) {
@@ -34,6 +36,7 @@ export default function Page() {
     const [language, setLanguage] = useState('NodeJs');
     const [projectName, setProjectName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const userId = useAtomValue(userSessionAtom);
     const { data: session } = useSession();
 
     if (!session) {
@@ -78,7 +81,7 @@ export default function Page() {
 
         setIsLoading(true);
         try {
-            const data = await createProject(projectName, language, session.user.email || "");
+            const data = await createProject(projectName, language, userId || "");
             console.log('Project created successfully:', data);
         } catch (error) {
             console.error('Error creating project:', error);

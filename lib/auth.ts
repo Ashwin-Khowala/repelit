@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
+import { signIn } from "next-auth/react";
 
 declare module "next-auth" {
     interface Session {
@@ -54,7 +55,7 @@ export const NEXT_AUTH_CONFIG = {
                     name: "asd",
                     userId: "asd",
                     email: "ramdomEmail"
-                };
+                }; 
             },
         }),
     ],
@@ -67,9 +68,12 @@ export const NEXT_AUTH_CONFIG = {
             }
             return token;
         },
-        session: ({ session, token, user }:any) => {
-            if (token&&session.user) {
-                session.user.id = token.uid;
+        session: ({ session, user}:any) => {
+            console.log("Session :" + Object.keys(session.user));
+            console.log("user: " +Object.keys(user));
+            if (user.id) {
+                session.user.id = user.id;
+                console.log("session user id : "+ session.user.id);
             }
             return session
         }

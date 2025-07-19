@@ -1,11 +1,7 @@
-// 
-
-
-
 "use client";
 
 import { MonacoEditor } from "@/components/Editor";
-import { useEffect, useState, use, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { io, Socket } from "socket.io-client";
 import { FileTree } from "@/components/NewFileExplorer";
 import { Type, File, RemoteFile, buildFileTree } from "@/utils/file-manager";
@@ -14,7 +10,9 @@ import { projectName } from "@/store/atoms/projectName";
 import { userSessionAtom } from "@/store/atoms/userId";
 import { useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
-import { X, Plus, Folder, FileText, Trash2 } from "lucide-react";
+import { X, Folder, FileText, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useParams } from "next/navigation";
 
 const TerminalComponent = dynamic(() => import('../../../../components/PsudoTerminal').then(mod => mod.TerminalComponent), {
   ssr: false,
@@ -124,8 +122,9 @@ const AddFileModal = ({
 
 export default function EditorPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const userId = useAtomValue(userSessionAtom);
-  const projectId = useAtomValue(projectName);
+  // const userId = useAtomValue(userSessionAtom);
+  // const projectId = useAtomValue(projectName);
+  const params = useParams<{ userId: string; projectId: string }>();
 
   const [fileStructure, setFileStructure] = useState<RemoteFile[]>([]);
   const [SelectedFile, SetSelectedFile] = useState<File | undefined>(undefined);
@@ -133,13 +132,31 @@ export default function EditorPage() {
   const [podCreated, setPodCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const userSession = useSession();
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'file' | 'folder'>('file');
+  
+  const userId = params.userId;
+  const projectId = params.projectId;
+
+  const userSessionId = useAtomValue(userSessionAtom);
+
+  console.log(userId);
+  // console.log(userSession.data?.user.id);
+  console.log(useAtomValue(userSessionAtom));
+  
+  // if(userId != userSessionId){
+  //   return <>
+  //     you are not allowed
+  //   </>
+  // }
+
 
   useEffect(() => {
     if (projectId && userId) {
-      axios.post(`http://localhost:3000/api/start`, { userId, projectId })
+      axios.post(`/api/start`, { userId, projectId })
         .then(() => setPodCreated(true))
         .catch((err) => console.error(err));
       // Mock API call - replace with your actual API
@@ -173,7 +190,6 @@ export default function EditorPage() {
       });
     }
   }, [socket]);
-
   const onSelect = (file: File) => {
     if (file.type === Type.DIRECTORY) {
       setSelectedFolder(file.path);
@@ -200,7 +216,7 @@ export default function EditorPage() {
       const fullPath = currentPath ? `${currentPath}/${name}` : name;
       socket?.emit("updateContent", { path: fullPath, content: "" });
     } else {
-      socket?.emit("createFolder", { path: currentPath, name: name }, (response:any) => {
+      socket?.emit("createFolder", { path: currentPath, name: name }, (response: any) => {
         if (response.error) {
           console.error("Failed to create folder:", response.error);
           return;
@@ -258,6 +274,7 @@ export default function EditorPage() {
 
   // If no pod is created, show loading state
   if (error) return <div className="text-red-500 p-4">{error}</div>;
+  if (!projectId || !userId) return <div className="text-white">{projectId} or {userId}missing</div>
   if (!podCreated) return <>Booting...</>;
   if (!socket) return <div>Loading...</div>;
 

@@ -7,7 +7,8 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
     try {
         const session = await getServerSession(NEXT_AUTH_CONFIG); 
-        const userId = session?.user?.email || "";
+        const userId = session?.user?.id || "";
+        console.log("userid " + userId)
         console.log('User ID:', userId);
         if (!userId) {
             return NextResponse.json(

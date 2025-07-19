@@ -24,8 +24,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Project, User } from "@/types";
-import dynamic from "next/dynamic";
-const TimeComponent = dynamic(()=>import("../../../components/TimeComponent"));
+import { userSessionAtom } from "@/store/atoms/userId";
+import { useAtomValue, useSetAtom } from "jotai";
+// import dynamic from "next/dynamic";
+// const TimeComponent = dynamic(()=>import("../../../components/TimeComponent"));
 
 
 async function userProjectsFetch(): Promise<Project[]> {
@@ -41,6 +43,7 @@ async function userProjectsFetch(): Promise<Project[]> {
 async function userDetailsFetch(): Promise<User> {
   try {
     const response = await axios.get('/api/user-data');
+    
     return response.data as User;
   } catch (e) {
     console.error(e);
@@ -134,7 +137,11 @@ export default function HomePage() {
     userProjectsFetch()
       .then(setRecentProjects)
       .catch(err => console.error(err));
-  }, [])
+  }, []);
+
+  const setUserId = useSetAtom(userSessionAtom);
+  setUserId(userDetails?.id ?? "");
+  console.log(useAtomValue(userSessionAtom));
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -97,11 +97,11 @@ function initHandlers(socket: Socket, replId: string) {
                 // await saveToAzure(filePath.substring(1),"");
 
                 // it will kill the terminal and the pods realted to that deployment 
-                const namespace = "default";
-                terminalManager.kill(socket.id);
-                appsV1Api.deleteNamespacedDeployment({ namespace, name:replId });
-                coreV1Api.deleteNamespacedService({ namespace, name:replId });
-                networkingV1Api.deleteNamespacedIngress({ namespace, name:replId });
+                // const namespace = "default";
+                // terminalManager.kill(socket.id);
+                // appsV1Api.deleteNamespacedDeployment({ namespace, name:replId });
+                // coreV1Api.deleteNamespacedService({ namespace, name:replId });
+                // networkingV1Api.deleteNamespacedIngress({ namespace, name:replId });
             } catch (e) {
                 console.log(e);
             }
