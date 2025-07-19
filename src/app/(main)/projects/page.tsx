@@ -26,7 +26,7 @@ export default function Page() {
     const fetchProjects = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("http://localhost:3000/api/user-projects");
+        const response = await fetch('/api/user-projects');
         const data = await response.json();
 
         if (!data || response.status == 404) {
