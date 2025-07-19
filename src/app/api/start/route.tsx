@@ -6,7 +6,30 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Initialize Kubernetes clients
 const kubeconfig = new KubeConfig();
-kubeconfig.loadFromDefault();
+
+if (process.env.NODE_ENV == "production") {
+    kubeconfig.loadFromOptions({
+        clusters: [{
+            name: 'aks-cluster',
+            server: process.env.KUBE_API_SERVER,
+            caData: process.env.KUBE_CA_CERT,
+        }],
+        users: [{
+            name: 'vercel-sa',
+            token: process.env.KUBE_TOKEN,
+        }],
+        contexts: [{
+            name: 'vercel-context',
+            user: 'vercel-sa',
+            cluster: 'aks-cluster',
+            namespace: process.env.KUBE_NAMESPACE,
+        }],
+        currentContext: 'vercel-context',
+    });
+} else {
+    kubeconfig.loadFromDefault();
+}
+
 const coreV1Api = kubeconfig.makeApiClient(CoreV1Api);
 const appsV1Api = kubeconfig.makeApiClient(AppsV1Api);
 const networkingV1Api = kubeconfig.makeApiClient(NetworkingV1Api);
@@ -49,9 +72,9 @@ function sanitizeK8sName(input: string): string {
 
 // Helper function to check if error is a 404
 const is404Error = (error: any): boolean => {
-    return error?.response?.statusCode === 404 || 
-           error?.statusCode === 404 || 
-           error?.code === 404;
+    return error?.response?.statusCode === 404 ||
+        error?.statusCode === 404 ||
+        error?.code === 404;
 };
 
 export async function POST(request: NextRequest) {
