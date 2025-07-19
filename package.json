@@ -11,7 +11,8 @@
     "local": "next dev",
     "dev:docker": "npm run prisma:docker & next dev",
     "prisma:migrate": "prisma migrate deploy",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.27.0",
@@ -29,6 +30,7 @@
     "next": "15.2.3",
     "next-auth": "^4.24.11",
     "node-pty": "^1.0.0",
+    "prisma": "^6.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
