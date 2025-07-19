@@ -1,0 +1,44 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - DATABASE_URL=postgresql://postgres:postgres@db:5432/mydb?schema=public
+    container_name: kodeit-server
+    ports:
+      - "3000:3000"
+    volumes:
+      # - ./src:/usr/src
+      # - ./prisma:/usr/prisma 
+      # - .:/usr
+      - /usr/src/app/node_modules   
+      - /usr/src/app/.next
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/mydb?schema=public
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    
+  db:
+    image: postgres:alpine
+    container_name: kodeit-db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+volumes:
+  postgres-data:
