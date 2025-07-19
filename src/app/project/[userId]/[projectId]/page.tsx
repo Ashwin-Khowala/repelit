@@ -167,7 +167,7 @@ export default function EditorPage() {
   // establishes a websocket connection using the projId and userId as Identifiers
   useEffect(() => {
     const replId = sanitizeK8sName(`${userId}-${projectId}`);
-    const newSocket = io(`ws://${replId}.code.ashwinkhowala.com`, { transports: ['websocket'] });
+    const newSocket = io(`wss://${replId}.code.ashwinkhowala.com`, { transports: ['websocket'] });
     setSocket(newSocket);
     console.log("Connecting to socket server...");
     newSocket.on("connect", () => {
