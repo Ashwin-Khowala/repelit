@@ -47,7 +47,6 @@ next-env.d.ts
 # Kubernetes secrets - NEVER commit these
 *secret*.yaml
 *-secret.yaml
-*service*.yaml
 secrets/
 .secrets/
 

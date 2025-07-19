@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-name
+  labels:
+    app: service-name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-name
+  template:
+    metadata:
+      labels:
+        app: service-name
+    spec:
+      volumes:
+        - name: workspace-volume
+          emptyDir: {}
+      initContainers:
+        - name: copy-azure-object-store-resources
+          image: mcr.microsoft.com/azure-cli
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              az storage blob download-batch --source coding-platform --pattern "code/userId/projectId/*" --destination ./workspace && echo "Resources copied from Azure Blob"
+          env:
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: AZURE_STORAGE_CONNECTION_STRING
+          volumeMounts:
+            - name: workspace-volume
+              mountPath: /workspace
+      containers:
+      - name: runner
+        image: ashwin06/runner:latest
+        ports:
+        - containerPort: 3001
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        env:
+        - name: AZURE_STORAGE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-storage-secret
+              key: AZURE_STORAGE_CONNECTION_STRING
+        - name: AZURE_CONTAINER_NAME
+          value: "coding-platform"
+        - name: NODE_ENV
+          value: "production"
+        volumeMounts:
+        - name: workspace-volume
+          mountPath: /workspace
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-name
+spec:
+  selector:
+    app: service-name
+  ports:
+    - protocol: TCP
+      name: web-socket-server
+      port: 3001
+      targetPort: 3001
+    - protocol: TCP
+      name: user
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: service-name
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    service.beta.kubernetes.io/do-loadbalancer-name: "load-balancer"
+    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "*"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/websocket-services: service-name
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: service-name.code.ashwinkhowala.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-name
+            port:
+              number: 3001
+  - host: service-name.out.ashwinkhowala.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-name
+            port:
+              number: 3000
