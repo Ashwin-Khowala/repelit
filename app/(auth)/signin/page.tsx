@@ -12,7 +12,7 @@ export default function Signup() {
     }
     if (session) {
         // If the user is already logged in, redirect them to the home page
-        window.location.href = "/dashboard";
+        window.location.href = "/home";
         return null;
     }
     return (

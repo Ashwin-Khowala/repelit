@@ -1,45 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { azureStorage } from '@/lib/azure/client';
-import { getServerSession } from 'next-auth/next';
-import { NEXT_AUTH_CONFIG } from '@/lib/auth';
-
-// fetch user projects
-export async function GET() {
-    try {
-        const session = await getServerSession(NEXT_AUTH_CONFIG); 
-        const userId = session?.user?.email || "";
-        console.log('User ID:', userId);
-        if (!userId) {
-            return NextResponse.json(
-                { error: 'User ID is required' },
-                { status: 400 }
-            );
-        }
-
-        const userProjects = await azureStorage.getUserProjects(userId);
-        if (!userProjects || userProjects.length === 0) {
-            return NextResponse.json(
-                { message: 'No projects found for this user' },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json(userProjects, { status: 200 });
-
-    } catch (error) {
-        console.error('Error fetching projects:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch projects' },
-            { status: 500 }
-        );
-    }
-}
+import { prisma } from '@/lib/prisma';
 
 // create new project for the user
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { userId, projectName, language } = body;
+        const { userId, projectName, language }: {
+            userId: string,
+            projectName: string,
+            language: string
+        } = body;
 
         if (!userId || !projectName || !language) {
             return NextResponse.json(
@@ -47,21 +18,44 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
+        try {
+            const updateDb = await prisma.project.create({
+                data: {
+                    projectName: projectName,
+                    language: language,
+                    createdAt: new Date(),
+                    lastModified: new Date(),
+                    userId: userId
+                }
+            });
 
-        const result = await azureStorage.createNewProject(
-            userId,
-            projectName,
-            language
-        );
+            console.log(updateDb);
 
-        if (!result) {
-            return NextResponse.json(
-                { error: 'Failed to create project' },
-                { status: 500 }
+            if (!updateDb){
+                console.log(updateDb+ "prisma creation failed");
+                 throw new Error("prisma proj cration failed");
+            }
+
+            const result = await azureStorage.createNewProject(
+                userId,
+                projectName,
+                language
             );
-        }
 
-        return NextResponse.json(result, { status: 201 });
+            console.log(result);
+
+            if (!result) {
+                console.log("cloud creation failed"+ result);
+                return NextResponse.json(
+                    { error: 'Failed to create project' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json(result, { status: 201 });
+        } catch (e) {
+            return NextResponse.json(e, { status: 500 });
+        }
 
     } catch (error) {
         console.error('Error creating project:', error);

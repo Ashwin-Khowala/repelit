@@ -1,12 +1,19 @@
 import { Server, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
-import path from "path";
 import { saveToAzure } from "./azure";
 import { createFolder, fetchDir, fetchFileContent, saveFile } from "./fs";
 import { TerminalManager } from "./pseudo-terminal";
-import { create } from "domain";
+import { AppsV1Api, CoreV1Api, KubeConfig, NetworkingV1Api } from "@kubernetes/client-node";
 
+// initialized k8s
+const kubeconfig = new KubeConfig();
 const terminalManager = new TerminalManager();
+
+kubeconfig.loadFromDefault();
+const coreV1Api = kubeconfig.makeApiClient(CoreV1Api);
+const appsV1Api = kubeconfig.makeApiClient(AppsV1Api);
+const networkingV1Api = kubeconfig.makeApiClient(NetworkingV1Api);
+
 
 export function initWs(httpServer: HttpServer) {
     console.log("🚀 Initializing WebSocket server...");
@@ -78,7 +85,26 @@ function initHandlers(socket: Socket, replId: string) {
     try {
         socket.on("disconnect", (reason) => {
             console.log("👋 User disconnected:", socket.id, "Reason:", reason);
-            terminalManager.kill(socket.id);
+            try{
+                // saves all files azure before deleting the pods
+                
+                // const length = replId.split('-').length;
+                // console.log(length);
+                // const projName = replId.split('.')[length-1];  
+                // console.log(projName);
+                // const userId = "";
+                // const filePath = `code/${userId}/${projName}`;
+                // await saveToAzure(filePath.substring(1),"");
+
+                // it will kill the terminal and the pods realted to that deployment 
+                const namespace = "default";
+                terminalManager.kill(socket.id);
+                appsV1Api.deleteNamespacedDeployment({ namespace, name:replId });
+                coreV1Api.deleteNamespacedService({ namespace, name:replId });
+                networkingV1Api.deleteNamespacedIngress({ namespace, name:replId });
+            } catch (e) {
+                console.log(e);
+            }
         });
 
         socket.on("fetchDir", async (dir: string, callback) => {
@@ -110,18 +136,6 @@ function initHandlers(socket: Socket, replId: string) {
         // TODO: contents should be diff, not full file
         // Should be validated for size
         // Should be throttled before updating Azure
-        // socket.on("updateContent", async ({ path: filePath, content }: { path: string, content: string }) => {
-        //     console.log("updateContent requested for:", filePath, "length:", content?.length || 0);
-        //     try {
-        //         const fullPath = `/workspace/${filePath}`;
-        //         // const fullPath = filePath;
-        //         await saveFile(fullPath, content);
-        //         await saveToAzure(filePath.substring(1), content);
-        //         console.log("✅ updateContent completed for:", filePath);
-        //     } catch (error) {
-        //         console.error("❌ Error in updateContent:", error);
-        //     }
-        // });
 
         socket.on("updateContent", async ({ path: filePath, content }: { path: string, content: string }) => {
             console.log("updateContent requested for:", filePath, "length:", content?.length || 0);

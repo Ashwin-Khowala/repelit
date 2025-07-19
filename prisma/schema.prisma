@@ -15,8 +15,10 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  projects Project[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
+
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -75,4 +77,14 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  
   @@id([userId, credentialID])
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  projectName   String
+  language      String
+  createdAt     DateTime @default(now())
+  lastModified  DateTime @updatedAt
+  userId        String
+  user          User     @relation(fields: [userId], references: [email], onDelete: Cascade)
 }

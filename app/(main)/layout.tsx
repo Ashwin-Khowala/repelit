@@ -1,14 +1,13 @@
-import AppBar from "@/components/AppBar"
+import { ReactNode } from 'react';
+import ClientLayout from './clientLayout';
+import AppBar from '@/components/AppBar';
 
-export default function Layout({children}:{
-    children: React.ReactNode
-}){
+export default function RootLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="flex ">
-            <AppBar />
-            <div>
+        <div >
+            <ClientLayout>
                 {children}
-            </div>
-        </div>
-    )
+            </ClientLayout>
+        </div >
+    );
 }
