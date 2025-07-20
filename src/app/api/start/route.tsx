@@ -7,7 +7,8 @@ import { NextRequest, NextResponse } from "next/server";
 // Initialize Kubernetes clients
 const kubeconfig = new KubeConfig();
 
-if (process.env.NODE_ENV == "production") {
+if (process.env.NODE_ENV === "production") {
+    console.log("here bois");
     kubeconfig.loadFromOptions({
         clusters: [{
             name: 'aks-cluster',
