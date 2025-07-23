@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useAtomValue } from "jotai";
+import { isSideBarCollapsedAtom } from "@/src/store/atoms/sideBarCollapsed";
 
 async function createProject(projectName: string, language: string, userId: string) {
     if (!projectName || !language) {
@@ -34,11 +36,12 @@ export default function Page() {
     const [language, setLanguage] = useState('NodeJs');
     const [projectName, setProjectName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const isCollapsed = useAtomValue(isSideBarCollapsedAtom);
     const { data: session } = useSession();
 
     if (!session) {
         return (
-            <div className="h-screen bg-black flex items-center justify-center overflow-hidden relative">
+            <div className={`h-screen bg-black flex items-center justify-center overflow-hidden relative ${isCollapsed ? 'w-[94vw]' : 'w-[82vw]'}`}>
                 {/* Animated background */}
                 <div className="absolute inset-0">
                     <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full blur-3xl animate-pulse"></div>
@@ -89,7 +92,7 @@ export default function Page() {
     };
 
     return (
-        <div className="">
+        <div className={`${isCollapsed ? 'w-[94vw]' : 'w-[82vw]' }`}>
             <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden relative">
                 {/* Animated background orbs */}
                 <div className="absolute inset-0">
@@ -146,8 +149,8 @@ export default function Page() {
                                     onChange={handleChange}
                                     className="w-full px-6 py-4 bg-black/50 border-2 border-purple-500/30 rounded-2xl text-white text-lg focus:outline-none focus:border-purple-500 focus:shadow-lg focus:shadow-purple-500/25 transition-all duration-300 hover:border-purple-500/50 appearance-none cursor-pointer"
                                 >
-                                    <option value="NodeJs" className="bg-black text-white rounded-md">Node.js</option>
-                                    <option value="NextJs" className="bg-black text-white">Next.js</option>
+                                    <option value="NodeJs" className="bg-black text-white rounded-md">NodeJs</option>
+                                    <option value="NextJs" className="bg-black text-white">NextJs</option>
                                     <option value="C" className="bg-black text-white">C</option>
                                     <option value="Java" className="bg-black text-white">Java</option>
                                 </select>

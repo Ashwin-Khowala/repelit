@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {Directory, File, sortDir, sortFile} from "../utils/file-manager";
 import { getIcon } from "./Icons";
-import styled from "@emotion/styled";
+import { ChevronRight, ChevronDown } from "lucide-react";
 
 interface FileTreeProps {
   rootDir: Directory;   
@@ -10,7 +10,11 @@ interface FileTreeProps {
 }
 
 export const FileTree = (props: FileTreeProps) => {
-  return <SubTree directory={props.rootDir} {...props}/>
+  return (
+    <div className="bg-gray-900 text-gray-100 font-mono text-sm leading-relaxed select-none overflow-y-auto h-full">
+      <SubTree directory={props.rootDir} {...props}/>
+    </div>
+  )
 }
 
 interface SubTreeProps {
@@ -21,7 +25,7 @@ interface SubTreeProps {
 
 const SubTree = (props: SubTreeProps) => {
   return (
-    <div>
+    <div className="flex flex-col">
       {
         props.directory.dirs
           .sort(sortDir)
@@ -50,43 +54,55 @@ const SubTree = (props: SubTreeProps) => {
   )
 }
 
-const FileDiv = ({file, icon, selectedFile, onClick}: {
+const FileDiv = ({file, icon, selectedFile, onClick, isDirectory = false}: {
   file: File | Directory; 
   icon?: string;          
   selectedFile: File | undefined;     
-  onClick: () => void;    
+  onClick: () => void;
+  isDirectory?: boolean;
 }) => {
   const isSelected = (selectedFile && selectedFile.id === file.id) as boolean;
   const depth = file.depth;
+  const paddingLeft = depth * 20 + 8;
+  
   return (
-    <Div
-      depth={depth}
-      isSelected={isSelected}
+    <div
+      className={`
+        flex items-center min-h-8 rounded-md transition-all duration-150 cursor-pointer relative group
+        ${isSelected 
+          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' 
+          : 'hover:bg-white/5'
+        }
+      `}
+      style={{paddingLeft}}
       onClick={onClick}>
-      <FileIcon
-        name={icon}
-        extension={file.name.split('.').pop() || ""}/>
-      <span style={{marginLeft: 1}}>
-        {file.name}
-      </span>
-    </Div>
+      
+      {/* Hover indicator */}
+      <div className={`
+        absolute left-0 top-0 bottom-0 w-1 rounded-r-sm transition-all duration-200
+        ${isSelected 
+          ? 'bg-blue-300' 
+          : 'bg-blue-500 opacity-0 group-hover:opacity-100'
+        }
+      `} />
+      
+      <div className="flex items-center">
+        <div className="flex items-center justify-center w-6 h-6 mr-2">
+          <FileIcon
+            name={icon}
+            extension={file.name.split('.').pop() || ""}/>
+        </div>
+        <span className={`
+          truncate transition-colors duration-150
+          ${isSelected ? 'text-white font-medium' : 'text-gray-200'}
+          ${isDirectory ? 'font-medium' : ''}
+        `}>
+          {file.name}
+        </span>
+      </div>
+    </div>
   )
 }
-
-const Div = styled.div<{
-  depth: number;
-  isSelected: boolean;
-}>`
-  display: flex;
-  align-items: center;
-  padding-left: ${props => props.depth * 16}px;
-  background-color: ${props => props.isSelected ? "#242424" : "transparent"};
-
-  :hover {
-    cursor: pointer;
-    background-color: #242424;
-  }
-`
 
 const DirDiv = ({directory, selectedFile, onSelect}: {
   directory: Directory;  
@@ -97,27 +113,87 @@ const DirDiv = ({directory, selectedFile, onSelect}: {
   if (selectedFile)
     defaultOpen = isChildSelected(directory, selectedFile)
   const [open, setOpen] = useState(defaultOpen);
+  const isSelected = selectedFile?.id === directory.id;
+  const paddingLeft = directory.depth * 20 + 8;
+  
   return (
-    <>
-      <FileDiv
-        file={directory}
-        icon={open ? "openDirectory" : "closedDirectory"}
-        selectedFile={selectedFile}
+    <div>
+      <div
+        className={`
+          flex items-center min-h-8 py-1 px-2 mx-1 rounded-md transition-all duration-150 cursor-pointer relative group
+          ${isSelected 
+            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' 
+            : 'hover:bg-white/5'
+          }
+        `}
+        style={{paddingLeft}}
         onClick={() => {
           if (!open) {
             onSelect(directory)
           }
           setOpen(!open)
-        }}/>
-      {
-        open ? (
-          <SubTree
-            directory={directory}
-            selectedFile={selectedFile}
-            onSelect={onSelect}/>
-        ) : null
-      }
-    </>
+        }}>
+        
+        {/* Hover indicator */}
+        <div className={`
+          absolute left-0 top-0 bottom-0 w-1 rounded-r-sm transition-all duration-200
+          ${isSelected 
+            ? 'bg-blue-300' 
+            : 'bg-blue-500 opacity-0 group-hover:opacity-100'
+          }
+        `} />
+        
+        <div className="flex items-center">
+          {/* Chevron toggle */}
+          <div className="flex items-center justify-center w-4 h-4 mr-1 transition-transform duration-200">
+            {open ? (
+              <ChevronDown size={14} className="text-gray-400" />
+            ) : (
+              <ChevronRight size={14} className="text-gray-400" />
+            )}
+          </div>
+          
+          {/* Directory icon */}
+          <div className="flex items-center justify-center w-6 h-6 mr-2">
+            <FileIcon
+              name={open ? "openDirectory" : "closedDirectory"}
+              extension=""/>
+          </div>
+          
+          {/* Directory name */}
+          <span className={`
+            truncate transition-colors duration-150 font-medium
+            ${isSelected ? 'text-white' : 'text-gray-200'}
+          `}>
+            {directory.name}
+          </span>
+        </div>
+      </div>
+      
+      {/* Directory contents with subtle animation */}
+      <div className={`
+        overflow-hidden transition-all duration-200 ease-out
+        ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+      `}>
+        {open && (
+          <div className="relative">
+            {/* Connecting line for nested items */}
+            <div 
+              className="absolute bg-gray-700 w-px opacity-30"
+              style={{
+                left: paddingLeft + 12,
+                top: 0,
+                bottom: 0
+              }} 
+            />
+            <SubTree
+              directory={directory}
+              selectedFile={selectedFile}
+              onSelect={onSelect}/>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -144,17 +220,5 @@ const isChildSelected = (directory: Directory, selectedFile: File) => {
 
 const FileIcon = ({extension, name}: { name?: string, extension?: string }) => {
   let icon = getIcon(extension || "", name || "");
-  return (
-    <Span>
-      {icon}
-    </Span>
-  )
+  return <>{icon}</>;
 }
-
-const Span = styled.span`
-  display: flex;
-  width: 32px;
-  height: 32px;
-  justify-content: center;
-  align-items: center;
-`

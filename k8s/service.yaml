@@ -41,11 +41,11 @@ spec:
         - containerPort: 3000
         resources:
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 250m
+            memory: 512Mi
           limits:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 250m
+            memory: 512Mi
         env:
         - name: AZURE_STORAGE_CONNECTION_STRING
           valueFrom:
@@ -94,6 +94,9 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-headers: "*"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/websocket-services: service-name
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    # your.platform.io/skipTLSVerify: "true"
 spec:
   ingressClassName: nginx
   rules:

@@ -6,7 +6,6 @@ import { io, Socket } from "socket.io-client";
 import { FileTree } from "@/src/components/NewFileExplorer";
 import { Type, File, RemoteFile, buildFileTree } from "@/src/utils/file-manager";
 import axios from "axios";
-import { projectName } from "@/src/store/atoms/projectName";
 import { userSessionAtom } from "@/src/store/atoms/userId";
 import { useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
@@ -137,7 +136,7 @@ export default function EditorPage() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'file' | 'folder'>('file');
-  
+
   const userId = params.userId;
   const projectId = params.projectId;
 
@@ -146,7 +145,7 @@ export default function EditorPage() {
   console.log(userId);
   // console.log(userSession.data?.user.id);
   console.log(useAtomValue(userSessionAtom));
-  
+
   // if(userId != userSessionId){
   //   return <>
   //     you are not allowed
@@ -167,7 +166,7 @@ export default function EditorPage() {
   // establishes a websocket connection using the projId and userId as Identifiers
   useEffect(() => {
     const replId = sanitizeK8sName(`${userId}-${projectId}`);
-    const newSocket = io(`wss://${replId}.code.ashwinkhowala.com`, { transports: ['websocket'] });
+    const newSocket = io(`ws://${replId}.code.ashwinkhowala.com`, { transports: ['websocket'] });
     setSocket(newSocket);
     console.log("Connecting to socket server...");
     newSocket.on("connect", () => {
@@ -190,6 +189,7 @@ export default function EditorPage() {
       });
     }
   }, [socket]);
+
   const onSelect = (file: File) => {
     if (file.type === Type.DIRECTORY) {
       setSelectedFolder(file.path);
@@ -282,43 +282,53 @@ export default function EditorPage() {
     <div className="flex h-screen bg-gray-900">
       {/* Sidebar component for project navigation */}
       <div className="w-[15vw] resize-x overflow-auto border-r border-gray-700 bg-zinc-950 text-white">
-        <div>
-          <h2 className="text-white text-lg font-semibold p-4">Project Files</h2>
+        {/* Header */}
+        <div className="relative bg-slate-900/80 backdrop-blur-sm border-b border-slate-800/30">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
+          <h2 className="relative text-slate-100 text-base font-semibold p-4 tracking-wide">
+            Project Explorer
+          </h2>
         </div>
 
         {/* Action buttons */}
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-4 border-b border-slate-800/30 bg-slate-900/20">
           <div className="flex flex-col gap-2">
             <button
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md transition-colors text-sm"
+              className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98]"
               onClick={() => openModal('file')}
             >
-              <FileText className="w-4 h-4" />
-              Add File
+              <FileText className="w-4 h-4 transition-transform group-hover:scale-110" />
+              <span>New File</span>
             </button>
+
             <button
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md transition-colors text-sm"
+              className="group flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] active:scale-[0.98]"
               onClick={() => openModal('folder')}
             >
-              <Folder className="w-4 h-4" />
-              Add Folder
+              <Folder className="w-4 h-4 transition-transform group-hover:scale-110" />
+              <span>New Folder</span>
             </button>
+
             <button
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition-colors text-sm"
+              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg ${!SelectedFile
+                ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white hover:shadow-red-500/25 hover:scale-[1.02] active:scale-[0.98]'
+                }`}
               onClick={handleDelete}
               disabled={!SelectedFile}
             >
-              <Trash2 className="w-4 h-4" />
-              Delete
+              <Trash2 className={`w-4 h-4 transition-transform ${!SelectedFile ? '' : 'group-hover:scale-110'}`} />
+              <span>Delete</span>
             </button>
           </div>
         </div>
-
-        <FileTree
-          rootDir={rootDir}
-          selectedFile={SelectedFile}
-          onSelect={onSelect}
-        />
+        <div className="min-h-full ">
+          <FileTree
+            rootDir={rootDir}
+            selectedFile={SelectedFile}
+            onSelect={onSelect}
+          />
+        </div>
       </div>
 
       {/* Editor component for writing code */}
