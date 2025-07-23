@@ -9,7 +9,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # - ./src:/usr/src
+      # - ./src:/usr/src/
       # - ./prisma:/usr/prisma 
       # - .:/usr
       - /usr/src/app/node_modules   

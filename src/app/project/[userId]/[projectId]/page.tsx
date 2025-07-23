@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { X, Folder, FileText, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 const TerminalComponent = dynamic(() => import('../../../../components/PsudoTerminal').then(mod => mod.TerminalComponent), {
   ssr: false,
@@ -121,8 +122,6 @@ const AddFileModal = ({
 
 export default function EditorPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
-  // const userId = useAtomValue(userSessionAtom);
-  // const projectId = useAtomValue(projectName);
   const params = useParams<{ userId: string; projectId: string }>();
 
   const [fileStructure, setFileStructure] = useState<RemoteFile[]>([]);
@@ -143,22 +142,13 @@ export default function EditorPage() {
   const userSessionId = useAtomValue(userSessionAtom);
 
   console.log(userId);
-  // console.log(userSession.data?.user.id);
   console.log(useAtomValue(userSessionAtom));
-
-  // if(userId != userSessionId){
-  //   return <>
-  //     you are not allowed
-  //   </>
-  // }
-
 
   useEffect(() => {
     if (projectId && userId) {
       axios.post(`/api/start`, { userId, projectId })
         .then(() => setPodCreated(true))
         .catch((err) => console.error(err));
-      // Mock API call - replace with your actual API
       setPodCreated(true);
     }
   }, [projectId, userId]);
@@ -274,89 +264,103 @@ export default function EditorPage() {
 
   // If no pod is created, show loading state
   if (error) return <div className="text-red-500 p-4">{error}</div>;
-  if (!projectId || !userId) return <div className="text-white">{projectId} or {userId}missing</div>
+  if (!projectId || !userId) return <div className="text-white">{projectId} or {userId} missing</div>
   if (!podCreated) return <>Booting...</>;
   if (!socket) return <div>Loading...</div>;
 
   return (
-    <div className="flex h-screen bg-gray-900">
-      {/* Sidebar component for project navigation */}
-      <div className="w-[15vw] resize-x overflow-auto border-r border-gray-700 bg-zinc-950 text-white">
-        {/* Header */}
-        <div className="relative bg-slate-900/80 backdrop-blur-sm border-b border-slate-800/30">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
-          <h2 className="relative text-slate-100 text-base font-semibold p-4 tracking-wide">
-            Project Explorer
-          </h2>
-        </div>
+    <div className="h-screen bg-gray-900">
+      <PanelGroup direction="horizontal" autoSaveId="editor-layout">
+        {/* File Explorer Panel */}
+        <Panel defaultSize={20} minSize={15} maxSize={40}>
+          <div className="h-full border-r border-gray-700 bg-zinc-950 text-white flex flex-col">
+            {/* Header */}
+            <div className="relative bg-slate-900/80 backdrop-blur-sm border-b border-slate-800/30">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
+              <h2 className="relative text-slate-100 text-base font-semibold p-4 tracking-wide">
+                Project Explorer
+              </h2>
+            </div>
 
-        {/* Action buttons */}
-        <div className="p-4 border-b border-slate-800/30 bg-slate-900/20">
-          <div className="flex flex-col gap-2">
-            <button
-              className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98]"
-              onClick={() => openModal('file')}
-            >
-              <FileText className="w-4 h-4 transition-transform group-hover:scale-110" />
-              <span>New File</span>
-            </button>
+            {/* Action buttons */}
+            <div className="p-4 border-b border-slate-800/30 bg-slate-900/20">
+              <div className="flex flex-col gap-2">
+                <button
+                  className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98]"
+                  onClick={() => openModal('file')}
+                >
+                  <FileText className="w-4 h-4 transition-transform group-hover:scale-110" />
+                  <span>New File</span>
+                </button>
 
-            <button
-              className="group flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] active:scale-[0.98]"
-              onClick={() => openModal('folder')}
-            >
-              <Folder className="w-4 h-4 transition-transform group-hover:scale-110" />
-              <span>New Folder</span>
-            </button>
+                <button
+                  className="group flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] active:scale-[0.98]"
+                  onClick={() => openModal('folder')}
+                >
+                  <Folder className="w-4 h-4 transition-transform group-hover:scale-110" />
+                  <span>New Folder</span>
+                </button>
 
-            <button
-              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg ${!SelectedFile
-                ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white hover:shadow-red-500/25 hover:scale-[1.02] active:scale-[0.98]'
-                }`}
-              onClick={handleDelete}
-              disabled={!SelectedFile}
-            >
-              <Trash2 className={`w-4 h-4 transition-transform ${!SelectedFile ? '' : 'group-hover:scale-110'}`} />
-              <span>Delete</span>
-            </button>
+                <button
+                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg ${!SelectedFile
+                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white hover:shadow-red-500/25 hover:scale-[1.02] active:scale-[0.98]'
+                    }`}
+                  onClick={handleDelete}
+                  disabled={!SelectedFile}
+                >
+                  <Trash2 className={`w-4 h-4 transition-transform ${!SelectedFile ? '' : 'group-hover:scale-110'}`} />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+
+            {/* File Tree */}
+            <div className="flex-1 overflow-auto">
+              <FileTree
+                rootDir={rootDir}
+                selectedFile={SelectedFile}
+                onSelect={onSelect}
+              />
+            </div>
           </div>
-        </div>
-        <div className="min-h-full ">
-          <FileTree
-            rootDir={rootDir}
-            selectedFile={SelectedFile}
-            onSelect={onSelect}
-          />
-        </div>
-      </div>
+        </Panel>
 
-      {/* Editor component for writing code */}
-      <div className="w-[50vw] h-screen resize-x overflow-auto border-x border-gray-700">
-        <MonacoEditor
-          fileName={SelectedFile?.name || "Untitled"}
-          language={SelectedFile?.name.split('.').pop() || "text"}
-          value={SelectedFile?.content || ""}
-          //@ts-ignore
-          onChange={debounce((value) => {
-            socket.emit("updateContent", { path: SelectedFile?.path, content: value });
-          }, 500)}
-        />
-      </div>
+        <PanelResizeHandle className=" bg-gray-700 hover:bg-gray-600 transition-colors" />
 
-      {/* Terminal component for running commands */}
-      <div className="w-[35vw] h-screen resize-x overflow-auto border-l border-gray-700">
-        <TerminalComponent socket={socket} />
-      </div>
+        {/* Editor Panel */}
+        <Panel defaultSize={50} minSize={30}>
+          <div className="h-full border-r border-gray-700">
+            <MonacoEditor
+              fileName={SelectedFile?.name || "Untitled"}
+              language={SelectedFile?.name.split('.').pop() || "text"}
+              value={SelectedFile?.content || ""}
+              //@ts-ignore
+              onChange={debounce((value) => {
+                socket.emit("updateContent", { path: SelectedFile?.path, content: value });
+              }, 500)}
+            />
+          </div>
+        </Panel>
+
+        <PanelResizeHandle className=" bg-gray-700 hover:bg-gray-600 transition-colors" />
+
+        {/* Terminal Panel */}
+        <Panel defaultSize={30} minSize={20}>
+          <div className="h-[100vh]">
+            <TerminalComponent socket={socket} />
+          </div>
+        </Panel>
+      </PanelGroup>
 
       {/* Add File/Folder Modal */}
-      <AddFileModal
+      {/* <AddFileModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddFile}
         type={modalType}
         currentPath={selectedFolder || ''}
-      />
+      /> */}
     </div>
   );
 }

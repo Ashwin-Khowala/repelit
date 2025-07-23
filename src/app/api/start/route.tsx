@@ -7,30 +7,28 @@ import { NextRequest, NextResponse } from "next/server";
 // Initialize Kubernetes clients
 const kubeconfig = new KubeConfig();
 
-// if (process.env.NODE_ENV === "production") {
-//     console.log("here bois");
-//     kubeconfig.loadFromOptions({
-//         clusters: [{
-//             name: 'aks-cluster',
-//             server: process.env.KUBE_API_SERVER,
-//             caData: process.env.KUBE_CA_CERT,
-//         }],
-//         users: [{
-//             name: 'vercel-sa',
-//             token: process.env.KUBE_TOKEN,
-//         }],
-//         contexts: [{
-//             name: 'vercel-context',
-//             user: 'vercel-sa',
-//             cluster: 'aks-cluster',
-//             namespace: process.env.KUBE_NAMESPACE,
-//         }],
-//         currentContext: 'vercel-context',
-//     });
-// } else {
+if (process.env.NODE_ENV === "production") {
+    kubeconfig.loadFromOptions({
+        clusters: [{
+            name: process.env.K8S_CLUSTER_NAME || 'my-cluster',
+            server: process.env.K8S_SERVER_URL,
+            caData: process.env.K8S_CA_DATA,
+            skipTLSVerify: process.env.K8S_SKIP_TLS === 'true'
+        }],
+        users: [{
+            name: process.env.K8S_USER_NAME || 'vercel-deployer',
+            token: process.env.K8S_TOKEN
+        }],
+        contexts: [{
+            name: process.env.K8S_CONTEXT_NAME || 'vercel-context',
+            cluster: process.env.K8S_CLUSTER_NAME || 'my-cluster',
+            user: process.env.K8S_USER_NAME || 'vercel-deployer'
+        }],
+        currentContext: process.env.K8S_CONTEXT_NAME || 'vercel-context'
+    });
+} else {
     kubeconfig.loadFromDefault();
-// }
-
+}
 const coreV1Api = kubeconfig.makeApiClient(CoreV1Api);
 const appsV1Api = kubeconfig.makeApiClient(AppsV1Api);
 const networkingV1Api = kubeconfig.makeApiClient(NetworkingV1Api);
