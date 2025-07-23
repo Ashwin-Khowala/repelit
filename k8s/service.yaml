@@ -44,8 +44,8 @@ spec:
             cpu: 250m
             memory: 512Mi
           limits:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 250m
+            memory: 512Mi
         env:
         - name: AZURE_STORAGE_CONNECTION_STRING
           valueFrom:
@@ -59,35 +59,15 @@ spec:
         volumeMounts:
         - name: workspace-volume
           mountPath: /workspace
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 3001
-          initialDelaySeconds: 5
-          periodSeconds: 5
           
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: service-name
-  annotations:
-    service.beta.kubernetes.io/do-loadbalancer-name: "load-balancer"
-    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
 spec:
-  type: LoadBalancer
   selector:
     app: service-name
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 3600
   ports:
     - protocol: TCP
       name: web-socket-server
@@ -97,7 +77,6 @@ spec:
       name: user
       port: 3000
       targetPort: 3000
-
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -107,23 +86,19 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "*"
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/websocket-services: "service-name:3001"
-    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
+    nginx.ingress.kubernetes.io/websocket-services: "service-name:3001"  # Specify port
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"         # Add for sticky sessions
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"                   # Add this
+    nginx.ingress.kubernetes.io/configuration-snippet: |                 # Add this
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "upgrade";
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
+  # Remove these DigitalOcean annotations from Ingress - they belong in Service
+  # service.beta.kubernetes.io/do-loadbalancer-name: "load-balancer"
+  # service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
 spec:
   ingressClassName: nginx
   rules:
