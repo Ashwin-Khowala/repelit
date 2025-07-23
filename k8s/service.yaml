@@ -83,22 +83,27 @@ kind: Ingress
 metadata:
   name: service-name
   annotations:
-    kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/websocket-services: "service-name:3001"  # Specify port
-    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"         # Add for sticky sessions
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"                   # Add this
-    nginx.ingress.kubernetes.io/configuration-snippet: |                 # Add this
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-  # Remove these DigitalOcean annotations from Ingress - they belong in Service
-  # service.beta.kubernetes.io/do-loadbalancer-name: "load-balancer"
-  # service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    # kubernetes.io/ingress.class: "nginx"
+    # service.beta.kubernetes.io/do-loadbalancer-name: "load-balancer"
+    # service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    # nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # nginx.ingress.kubernetes.io/enable-cors: "true"
+    # nginx.ingress.kubernetes.io/cors-allow-origin: ""
+    # nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    # nginx.ingress.kubernetes.io/cors-allow-headers: ""
+    # nginx.ingress.kubernetes.io/use-regex: "true"
+    # nginx.ingress.kubernetes.io/websocket-services: service-name
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      set $forwarded_client_ip "";
+      if ($http_x_forwarded_for ~ "^([^,]+)") {
+        set $forwarded_client_ip $1;
+      }
+      set $client_ip $remote_addr;
+      if ($forwarded_client_ip != "") {
+        set $client_ip $forwarded_client_ip;
+      }
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$client_ip"
 spec:
   ingressClassName: nginx
   rules:
