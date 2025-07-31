@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 KodeIt
 
-## Getting Started
+KodeIt is a fast and modern online coding platform inspired by Replit — built for developers who want a seamless experience for writing, running, and sharing code directly in the browser.
 
-First, run the development server:
+> ⚡ Blazing fast code execution, real-time collaboration, and project deployments with custom URLs.
+
+---
+
+## 🌟 Features
+
+- 🧠 **Multi-language Support** – Write and execute code in multiple programming languages.
+- 💬 **Real-time Collaboration** – Code with friends and teammates live.
+- 🚀 **Instant Code Execution** – Fast and efficient backend for compiling and running code.
+- 🧪 **Project Template Deployment** – Deploy starter templates and projects easily.
+- 🔗 **Custom Shareable Links** – Generate custom URLs for each deployed project.
+- ☁️ **Cloud-Native Architecture** – Built to scale with containers and orchestration.
+
+---
+
+## 🛠 Tech Stack
+
+| Layer        | Technology                                |
+|--------------|--------------------------------------------|
+| Frontend     | [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/) |
+| Backend      | [Node.js](https://nodejs.org/), [PostgreSQL](https://www.postgresql.org/), NextJs |
+| Containerization | [Docker](https://www.docker.com/) |
+| Orchestration | [Kubernetes](https://kubernetes.io/) |
+| Web Server   | [Nginx](https://www.nginx.com/) |
+| Cloud Storage| [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) |
+
+---
+
+## 🧑‍💻 Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- Docker + Docker Compose
+- Kubernetes (Minikube or any provider)
+- PostgreSQL running locally or via Docker
+- Azure Storage credentials (for object storage)
+
+### Local Setup
+
+1. **Clone the repo**
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/Ashwin-Khowala/repelit

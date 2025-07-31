@@ -26,6 +26,7 @@ import axios from "axios";
 import { Project, User } from "@/src/types";
 import { userSessionAtom } from "@/src/store/atoms/userId";
 import { useAtomValue, useSetAtom } from "jotai";
+import Image from "next/image";
 // import dynamic from "next/dynamic";
 // const TimeComponent = dynamic(()=>import("../../../components/TimeComponent"));
 
@@ -43,7 +44,7 @@ async function userProjectsFetch(): Promise<Project[]> {
 async function userDetailsFetch(): Promise<User> {
   try {
     const response = await axios.get('/api/user-data');
-    
+
     return response.data as User;
   } catch (e) {
     console.error(e);
@@ -86,7 +87,7 @@ export default function HomePage() {
 
   }, [status, router]);
 
-  
+
 
   // Animate stats on load
   useEffect(() => {
@@ -94,7 +95,7 @@ export default function HomePage() {
       const targets = {
         totalProjects: userDetails?.projects.length ?? 0,
         linesOfCode: 125847,
-        activeProjects: 12,
+        activeProjects: userDetails?.projects.length ?? 0,
         collaborators: 8
       }
       const duration = 2000;
@@ -189,103 +190,114 @@ export default function HomePage() {
                 </div>
               </div>
               {/* <TimeComponent/> */}
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Terminal className="w-6 h-6 text-white" />
+              <div className="w-10 h-10">
+                {userDetails?.image == null ?
+                  <Terminal className="w-6 h-6 text-white" /> : (
+                    <Image
+                      src={userDetails.image}
+                      alt={userDetails.name || "User Avatar"}
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover w-12 h-10"
+                    />
+                  )}
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-blue-500/50 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm font-mono">total_projects</p>
-                <p className="text-3xl font-bold text-blue-400">{stats.totalProjects}</p>
-              </div>
-              <Folder className="w-8 h-8 text-blue-500/50" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-blue-500/50 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm font-mono">total_projects</p>
+              <p className="text-3xl font-bold text-blue-400">{stats.totalProjects}</p>
             </div>
-          </div>
-
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-purple-500/50 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm font-mono">lines_of_code</p>
-                <p className="text-3xl font-bold text-purple-400">{stats.linesOfCode.toLocaleString()}</p>
-              </div>
-              <Code className="w-8 h-8 text-purple-500/50" />
-            </div>
-          </div>
-
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-green-500/50 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm font-mono">active_projects</p>
-                <p className="text-3xl font-bold text-green-400">{stats.activeProjects}</p>
-              </div>
-              <Activity className="w-8 h-8 text-green-500/50" />
-            </div>
-          </div>
-
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-yellow-500/50 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm font-mono">collaborators</p>
-                <p className="text-3xl font-bold text-yellow-400">{stats.collaborators}</p>
-              </div>
-              <Users className="w-8 h-8 text-yellow-500/50" />
-            </div>
+            <Folder className="w-8 h-8 text-blue-500/50" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-2">
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-blue-400" />
-                Quick Start
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quickActions.map((action, index) => {
-                  const IconComponent = action.icon;
-                  return (
-                    <button
-                      key={index}
-                      className="group relative overflow-hidden bg-gray-800/50 hover:bg-gray-800/70 rounded-lg p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-200 text-left"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center`}>
-                          <IconComponent className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-200 group-hover:text-white transition-colors">
-                            {action.title}
-                          </h3>
-                          <p className="text-sm text-gray-400">{action.desc}</p>
-                        </div>
+        <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-purple-500/50 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm font-mono">lines_of_code</p>
+              <p className="text-3xl font-bold text-purple-400">{stats.linesOfCode.toLocaleString()}</p>
+            </div>
+            <Code className="w-8 h-8 text-purple-500/50" />
+          </div>
+        </div>
+
+        <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-green-500/50 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm font-mono">active_projects</p>
+              <p className="text-3xl font-bold text-green-400">{stats.activeProjects}</p>
+            </div>
+            <Activity className="w-8 h-8 text-green-500/50" />
+          </div>
+        </div>
+
+        <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 hover:border-yellow-500/50 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm font-mono">collaborators</p>
+              <p className="text-3xl font-bold text-yellow-400">{stats.collaborators}</p>
+            </div>
+            <Users className="w-8 h-8 text-yellow-500/50" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Quick Actions */}
+        <div className="lg:col-span-2">
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6 mb-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-blue-400" />
+              Quick Start
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {quickActions.map((action, index) => {
+                const IconComponent = action.icon;
+                return (
+                  <button
+                    key={index}
+                    className="group relative overflow-hidden bg-gray-800/50 hover:bg-gray-800/70 rounded-lg p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-200 text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center`}>
+                        <IconComponent className="w-5 h-5 text-white" />
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 transform -translate-y-1/2 group-hover:text-gray-300" />
-                    </button>
-                  );
-                })}
-              </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-200 group-hover:text-white transition-colors">
+                          {action.title}
+                        </h3>
+                        <p className="text-sm text-gray-400">{action.desc}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 transform -translate-y-1/2 group-hover:text-gray-300" />
+                  </button>
+                );
+              })}
             </div>
+          </div>
 
-            {/* Recent Projects */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-purple-400" />
-                  Recent Projects
-                </h2>
-                <button className="text-blue-400 hover:text-blue-300 text-sm font-mono">
-                  view_all →
-                </button>
-              </div>
+          {/* Recent Projects */}
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Clock className="w-5 h-5 text-purple-400" />
+                Recent Projects
+              </h2>
+              <button className="text-blue-400 hover:text-blue-300 text-sm font-mono">
+                view_all →
+              </button>
+            </div>
+            {recentProjects && recentProjects.length > 0 ? (
               <div className="space-y-3">
-                {recentProjects && recentProjects.map((project, index) => (
+                {recentProjects.map((project, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 group"
@@ -300,14 +312,12 @@ export default function HomePage() {
                           <span className={`px-2 py-1 rounded-md text-xs border ${getLanguageColor(project.language || "")}`}>
                             {project.language}
                           </span>
-                          <span className="text-gray-400">{(String)(project.lastModified)}</span>
+                          <span className="text-gray-400">{String(project.lastModified)}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* <span className={`px-2 py-1 rounded-md text-xs border ${getStatusColor(project.status)}`}> */}
                       <span className={`px-2 py-1 rounded-md text-xs border ${getStatusColor("building")}`}>
-                        {/* {project.status} */}
                         building
                       </span>
                       <button className="p-1 text-gray-400 hover:text-blue-400 transition-colors">
@@ -317,83 +327,87 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+            ) : (
+              <div className="text-center text-gray-400 py-8">
+                No recent projects found
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Achievements */}
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-400" />
+              Achievements
+            </h2>
+            <div className="space-y-3">
+              {achievements.map((achievement, index) => {
+                const IconComponent = achievement.icon;
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${achievement.unlocked
+                      ? 'bg-yellow-400/10 border-yellow-400/30 text-yellow-300'
+                      : 'bg-gray-800/30 border-gray-700/30 text-gray-500'
+                      }`}
+                  >
+                    <IconComponent className="w-5 h-5" />
+                    <div>
+                      <h3 className="font-semibold text-sm">{achievement.title}</h3>
+                      <p className="text-xs opacity-75">{achievement.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Achievements */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-400" />
-                Achievements
-              </h2>
-              <div className="space-y-3">
-                {achievements.map((achievement, index) => {
-                  const IconComponent = achievement.icon;
-                  return (
-                    <div
-                      key={index}
-                      className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${achievement.unlocked
-                        ? 'bg-yellow-400/10 border-yellow-400/30 text-yellow-300'
-                        : 'bg-gray-800/30 border-gray-700/30 text-gray-500'
-                        }`}
-                    >
-                      <IconComponent className="w-5 h-5" />
-                      <div>
-                        <h3 className="font-semibold text-sm">{achievement.title}</h3>
-                        <p className="text-xs opacity-75">{achievement.desc}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* System Status */}
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-400" />
+              System Status
+            </h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Build System</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-green-400">Operational</span>
+                </div>
               </div>
-            </div>
-
-            {/* System Status */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-400" />
-                System Status
-              </h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Build System</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-green-400">Operational</span>
-                  </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Deployment</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-green-400">Healthy</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Deployment</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-green-400">Healthy</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Database</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-yellow-400">Maintenance</span>
-                  </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Database</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-yellow-400">Maintenance</span>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Quick Tips */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-400" />
-                Pro Tip
-              </h2>
-              <div className="bg-blue-400/10 border border-blue-400/30 rounded-lg p-4">
-                <p className="text-sm text-blue-300 font-mono">
+          {/* Quick Tips */}
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800/50 p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-400" />
+              Pro Tip
+            </h2>
+            <div className="bg-blue-400/10 border border-blue-400/30 rounded-lg p-4">
+              <p className="text-sm text-blue-300 font-mono">
                   // Use Ctrl+Shift+P to open command palette
-                  <br />
+                <br />
                   // Try "Deploy to production" for instant deployment
-                </p>
-              </div>
+              </p>
             </div>
           </div>
         </div>

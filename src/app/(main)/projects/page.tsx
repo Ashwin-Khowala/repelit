@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, Grid, List, Plus, Calendar, Code, User, Clock, SortAsc, SortDesc } from "lucide-react";
 import { ProjectCard } from "@/src/components/projectComponent/ProjectCard";
 
@@ -21,24 +21,28 @@ export default function Page() {
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'modified'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         setIsLoading(true);
         const response = await fetch('/api/user-projects');
-        const data = await response.json();
 
-        if (!data || response.status == 404) {
-          return <>
-            No Project Found
-          </>
+        if (!response.ok) {
+          console.error('Failed to fetch projects:', response.status);
+          setProjects([]);
+          return;
         }
 
-        setProjects(data);
-        setFilteredProjects(data);
+        const data = await response.json();
+        setProjects(data || []);
+        setFilteredProjects(data || []);
       } catch (error) {
         console.error("Failed to fetch projects:", error);
+        setProjects([]);
+        setError('Failed to load projects. Please try again.');
+        setFilteredProjects([]);
       } finally {
         setIsLoading(false);
       }
@@ -47,48 +51,55 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    let filtered = projects.filter(project => {
-      const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.userId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.language?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (projects && projects.length > 0) {
+      let filtered = projects.filter(project => {
+        const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.userId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.language?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesLanguage = selectedLanguage === "" || project.language === selectedLanguage;
+        const matchesLanguage = selectedLanguage === "" || project.language === selectedLanguage;
 
-      return matchesSearch && matchesLanguage;
-    });
+        return matchesSearch && matchesLanguage;
+      });
 
-    // Sort projects
-    filtered.sort((a, b) => {
-      let aValue, bValue;
+      // Sort projects
+      filtered.sort((a, b) => {
+        let aValue, bValue;
 
-      switch (sortBy) {
-        case 'name':
-          aValue = a.projectName.toLowerCase();
-          bValue = b.projectName.toLowerCase();
-          break;
-        case 'created':
-          aValue = new Date(a.createdAt || '').getTime();
-          bValue = new Date(b.createdAt || '').getTime();
-          break;
-        case 'modified':
-          aValue = new Date(a.lastModified || '').getTime();
-          bValue = new Date(b.lastModified || '').getTime();
-          break;
-        default:
-          return 0;
-      }
+        switch (sortBy) {
+          case 'name':
+            aValue = a.projectName.toLowerCase();
+            bValue = b.projectName.toLowerCase();
+            break;
+          case 'created':
+            aValue = new Date(a.createdAt || '').getTime();
+            bValue = new Date(b.createdAt || '').getTime();
+            break;
+          case 'modified':
+            aValue = new Date(a.lastModified || '').getTime();
+            bValue = new Date(b.lastModified || '').getTime();
+            break;
+          default:
+            return 0;
+        }
 
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
+        if (sortOrder === 'asc') {
+          return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        } else {
+          return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        }
+      });
 
-    setFilteredProjects(filtered);
+      setFilteredProjects(filtered);
+    }
   }, [projects, searchQuery, selectedLanguage, sortBy, sortOrder]);
 
-  const languages = [...new Set((projects || []).map(p => p.language).filter(Boolean))];
+  // const languages = (projects && projects.length > 0) ? [...new Set((projects || []).map(p => p.language).filter(Boolean))] : null;
+  // Move this inside useMemo to avoid recalculating on every render
+  const languages = useMemo(() => {
+    if (!projects?.length) return [];
+    return [...new Set(projects.map(p => p.language).filter(Boolean))];
+  }, [projects]);
 
   const handleSortChange = (newSortBy: 'name' | 'created' | 'modified') => {
     if (sortBy === newSortBy) {
@@ -115,6 +126,7 @@ export default function Page() {
       </div>
     );
   }
+
 
   return (
     <div className="p-8 h-screen bg-gray-950 w-[82vw] overflow-hidden">
@@ -162,7 +174,7 @@ export default function Page() {
                 className="pl-10 pr-8 py-3 bg-gray-800/50 border border-gray-700/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-100 transition-all duration-200"
               >
                 <option value="">All Languages</option>
-                {languages.map(lang => (
+                {languages?.map(lang => (
                   <option key={lang} value={lang}>{lang}</option>
                 ))}
               </select>
@@ -173,8 +185,8 @@ export default function Page() {
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-3 transition-all duration-200 ${viewMode === 'grid'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50'
                   }`}
               >
                 <Grid className="w-4 h-4" />
@@ -182,8 +194,8 @@ export default function Page() {
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-3 transition-all duration-200 ${viewMode === 'list'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50'
                   }`}
               >
                 <List className="w-4 h-4" />
@@ -203,8 +215,8 @@ export default function Page() {
                 key={key}
                 onClick={() => handleSortChange(key as 'name' | 'created' | 'modified')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all duration-200 font-mono ${sortBy === key
-                    ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50 border border-transparent'
+                  ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50 border border-transparent'
                   }`}
               >
                 {label}
@@ -240,7 +252,7 @@ export default function Page() {
               ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               : "space-y-4"
           }>
-            {filteredProjects.map((project, idx) => (
+            {(filteredProjects && filteredProjects.length > 0) ? filteredProjects.map((project, idx) => (
               <ProjectCard
                 key={idx}
                 name={project.projectName}
@@ -250,7 +262,10 @@ export default function Page() {
                 lastModified={project.lastModified}
                 viewMode={viewMode}
               />
-            ))}
+            )) :
+              <div className="text-center text-gray-50">
+                No projects found
+              </div>}
           </div>
         )}
       </div>

@@ -6,7 +6,7 @@ import { prisma } from '@/src/lib/prisma';
 // fetch user projects
 export async function GET() {
     try {
-        const session = await getServerSession(NEXT_AUTH_CONFIG); 
+        const session = await getServerSession(NEXT_AUTH_CONFIG);
         const userId = session?.user?.id || "";
         console.log("userid " + userId)
         console.log('User ID:', userId);
@@ -16,19 +16,19 @@ export async function GET() {
                 { status: 400 }
             );
         }
-        
+
         const userProjects = await prisma.project.findMany({
-            where : {
-                userId : userId
+            where: {
+                userId: userId
             }
         });
         if (!userProjects || userProjects.length === 0) {
             return NextResponse.json(
-                { message: 'No projects found for this user' },
-                { status: 404 }
+                { userProjects },
+                { status: 200 }
             );
         }
-        
+
 
         return NextResponse.json(userProjects, { status: 200 });
 
