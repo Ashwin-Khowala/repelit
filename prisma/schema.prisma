@@ -15,7 +15,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  // githubVerified Boolean @default(false)
+  githubVerified Boolean @default(false)
+  accessToken String?
   projects Project[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]

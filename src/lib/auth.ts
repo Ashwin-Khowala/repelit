@@ -42,6 +42,15 @@ export const NEXT_AUTH_CONFIG = {
             clientId: process.env.GITHUB_CLIENT_ID ?? "",
             clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
             authorization: { params: { scope: "read:user user:email" } },
+            profile(profile, tokens) {
+                return {
+                    id: String(profile.id),
+                    name: profile.name,
+                    email: profile.email,
+                    image: profile.avatar_url,
+                    accessToken: tokens.access_token
+                }
+            },
         }),
         CredentialsProvider({
             name: 'Credentials',
@@ -63,21 +72,19 @@ export const NEXT_AUTH_CONFIG = {
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
-        // async signIn:{
-        //     if()
-        // },
-        jwt: async ({ user, token }: any) => {
+        jwt: async ({ user, token, account }: any) => {
             if (user) {
                 token.uid = user.id;
             }
+            if(account){
+                token.accessToken = account.accessToken;
+            }
             return token;
         },
-        session: ({ session, user }: any) => {
-            console.log("Session :" + Object.keys(session.user));
-            console.log("user: " + Object.keys(user));
+        session: ({ session, user}: any) => {
             if (user.id) {
                 session.user.id = user.id;
-                console.log("session user id : " + session.user.id);
+                session.user.accessToken = user.accessToken;
             }
             return session
         }
