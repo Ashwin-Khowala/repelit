@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Grid, List, Plus, Calendar, Code, User, Clock, SortAsc, SortDesc } from "lucide-react";
+import { Search, Filter, Grid, List, Plus, Calendar, Code, User, Clock, SortAsc, SortDesc, Github, GitBranch, Download } from "lucide-react";
 import { ProjectCard } from "@/src/components/projectComponent/ProjectCard";
+import { useRouter } from "next/navigation";
 
 type Project = {
   projectName: string;
@@ -22,6 +23,9 @@ export default function Page() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showGitHubOptions, setShowGitHubOptions] = useState(false);
+  const [isGitHubConnected, setIsGitHubConnected] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -48,6 +52,22 @@ export default function Page() {
       }
     };
     fetchProjects();
+  }, []);
+
+  // Check GitHub connection status
+  useEffect(() => {
+    const checkGitHubConnection = async () => {
+      try {
+        const response = await fetch('/api/github/status');
+        if (response.ok) {
+          const data = await response.json();
+          setIsGitHubConnected(data.connected);
+        }
+      } catch (error) {
+        console.error('Failed to check GitHub connection:', error);
+      }
+    };
+    checkGitHubConnection();
   }, []);
 
   useEffect(() => {
@@ -94,8 +114,6 @@ export default function Page() {
     }
   }, [projects, searchQuery, selectedLanguage, sortBy, sortOrder]);
 
-  // const languages = (projects && projects.length > 0) ? [...new Set((projects || []).map(p => p.language).filter(Boolean))] : null;
-  // Move this inside useMemo to avoid recalculating on every render
   const languages = useMemo(() => {
     if (!projects?.length) return [];
     return [...new Set(projects.map(p => p.language).filter(Boolean))];
@@ -110,7 +128,33 @@ export default function Page() {
     }
   };
 
-  // loading sekeleton 
+  const handleConnectGitHub = async () => {
+    try {
+      // Redirect to GitHub OAuth
+      window.location.href = '/api/auth/github';
+    } catch (error) {
+      console.error('Failed to connect to GitHub:', error);
+    }
+  };
+
+  const handleImportFromGitHub = async () => {
+    try {
+      // Open GitHub import modal or redirect to import page
+      window.location.href = '/import/github';
+    } catch (error) {
+      console.error('Failed to import from GitHub:', error);
+    }
+  };
+
+  const handleCreateProject = () => {
+    setShowGitHubOptions(!showGitHubOptions);
+  };
+  const handleCreateNewProject = () => {
+    console.log("new project req");
+    router.push('/create');
+  }
+
+  // loading skeleton 
   if (isLoading) {
     return (
       <div className="p-8 min-h-screen bg-gray-950 w-[82vw]">
@@ -126,7 +170,6 @@ export default function Page() {
       </div>
     );
   }
-
 
   return (
     <div className="p-8 h-screen bg-gray-950 w-[82vw] overflow-hidden">
@@ -144,10 +187,114 @@ export default function Page() {
               <span className="text-blue-400">{filteredProjects.length}</span> of <span className="text-purple-400">{projects.length}</span> projects loaded
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 border border-blue-500/20">
-            <Plus className="w-4 h-4" />
-            <span className="font-medium">New Project</span>
-          </button>
+
+          <div className="flex items-center gap-3">
+            {/* GitHub Status Indicator */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-800/50 border border-gray-700/50">
+              <Github className="w-4 h-4 text-gray-400" />
+              <span className={`text-xs font-medium ${isGitHubConnected ? 'text-green-400' : 'text-gray-400'}`}>
+                {isGitHubConnected ? 'Connected' : 'Not Connected'}
+              </span>
+              <div className={`w-2 h-2 rounded-full ${isGitHubConnected ? 'bg-green-400' : 'bg-red-600'}`} />
+            </div>
+
+            {/* Create Project Button with Dropdown */}
+            <div className="relative">
+              <button
+                onClick={handleCreateProject}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 cursor-pointer z-100"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="font-medium ">New Project</span>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showGitHubOptions && (
+                <div className="absolute right-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-2xl z-50 overflow-hidden">
+                  <div className="p-2">
+                    {/* Create New Project */}
+                    <button
+                      onClick={handleCreateNewProject}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800/50 rounded-lg transition-all duration-200 group cursor-pointer"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                        <Plus className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-gray-100 font-medium">Create New Project</div>
+                        <div className="text-gray-400 text-xs">Start from scratch</div>
+                      </div>
+                    </button>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-700/50 my-2"></div>
+
+                    {/* Connect with GitHub */}
+                    {!isGitHubConnected && (
+                      <button
+                        onClick={handleConnectGitHub}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800/50 rounded-lg transition-all duration-200 group cursor-pointer"
+                      >
+                        <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center border border-gray-600/50">
+                          <Github className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="text-gray-100 font-medium">Connect with GitHub</div>
+                          <div className="text-gray-400 text-xs">Link your GitHub account</div>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Import from GitHub */}
+                    <button
+                      onClick={handleImportFromGitHub}
+                      disabled={!isGitHubConnected}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 group cursor-pointer ${isGitHubConnected
+                        ? 'hover:bg-gray-800/50'
+                        : 'opacity-50 cursor-not-allowed'
+                        }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isGitHubConnected
+                        ? 'bg-gradient-to-br from-green-600 to-emerald-600 border-green-500/50'
+                        : 'bg-gray-800 border-gray-600/50'
+                        }`}>
+                        <Download className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-gray-100 font-medium">Import from GitHub</div>
+                        <div className="text-gray-400 text-xs">
+                          {isGitHubConnected ? 'Import existing repositories' : 'Connect GitHub first'}
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Clone Repository */}
+                    <button
+                      // onClick={handleCloneRepository}
+                      disabled={!isGitHubConnected}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 group cursor-pointer ${isGitHubConnected
+                        ? 'hover:bg-gray-800/50'
+                        : 'opacity-50 cursor-not-allowed'
+                        }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isGitHubConnected
+                        ? 'bg-gradient-to-br from-orange-600 to-red-600 border-orange-500/50'
+                        : 'bg-gray-800 border-gray-600/50'
+                        }`}>
+                        <GitBranch className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-gray-100 font-medium">Clone Repository</div>
+                        <div className="text-gray-400 text-xs">
+                          {isGitHubConnected ? 'Clone any public repository' : 'Connect GitHub first'}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -242,9 +389,20 @@ export default function Page() {
                 ? "// Try adjusting your search parameters"
                 : "// Initialize your first project"}
             </p>
-            <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 border border-blue-500/20">
-              Create Project
-            </button>
+            <div className="flex gap-3 justify-center">
+              <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/25 border border-blue-500/20">
+                Create Project
+              </button>
+              {isGitHubConnected && (
+                <button
+                  onClick={handleImportFromGitHub}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-green-500/25 border border-green-500/20 flex items-center gap-2"
+                >
+                  <Github className="w-4 h-4" />
+                  Import from GitHub
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className={

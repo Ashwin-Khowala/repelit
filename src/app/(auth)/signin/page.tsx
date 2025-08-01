@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { InputBox } from "@/src/components/ui/InputBox";
 import Link from "next/link";
-import { GoogleButton } from "@/src/components/auth_buttons";
+import { GithubButton, GoogleButton } from "@/src/components/auth_buttons";
 import { useSession } from "next-auth/react";
 
 export default function Signup() {
@@ -49,6 +49,9 @@ export default function Signup() {
                     <div className="w-full flex justify-center">
                         <div className="flex flex-col w-[20vw]">
                             <GoogleButton />
+                        </div>
+                        <div className="flex flex-col w-[20vw]">
+                            <GithubButton />
                         </div>
                     </div>
 

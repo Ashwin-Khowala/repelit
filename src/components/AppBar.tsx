@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Home, Info, FolderOpen, Plus, Code, Settings, User, ChevronLeft, ChevronRight, Terminal, Zap } from "lucide-react";
+import { Home, Info, FolderOpen, Plus, Code, Settings, User, ChevronLeft, ChevronRight, Terminal, Zap, Cloud } from "lucide-react";
 import { isSideBarCollapsedAtom } from "@/src/store/atoms/sideBarCollapsed";
 import { useAtom } from "jotai";
 
@@ -14,8 +14,8 @@ export default function AppBar() {
   const navItems = [
     { href: "/home", label: "Home", icon: Home },
     { href: "/projects", label: "Projects", icon: FolderOpen },
+    { href: "/deployment", label: "Deployment", icon: Cloud },
     { href: "/about", label: "About", icon: Info },
-    { href: "/settings", label: "Settings", icon: Settings },
     { href: "/profile", label: "Profile", icon: User },
   ];
 

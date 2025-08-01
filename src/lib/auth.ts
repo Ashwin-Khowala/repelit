@@ -1,4 +1,4 @@
-import { DefaultUser, DefaultSession} from "next-auth";
+import { DefaultUser, DefaultSession } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
@@ -21,15 +21,11 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
     interface JWT {
         uid?: string;
-    } 
+    }
 }
 
 export const NEXT_AUTH_CONFIG = {
     providers: [
-        GitHubProvider({
-            clientId: process.env.GITHUB_ID ?? "",
-            clientSecret: process.env.GITHUB_SECRET ?? ""
-        }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID ?? "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
@@ -41,6 +37,11 @@ export const NEXT_AUTH_CONFIG = {
                     image: profile.picture,
                 }
             },
+        }),
+        GitHubProvider({
+            clientId: process.env.GITHUB_CLIENT_ID ?? "",
+            clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+            authorization: { params: { scope: "read:user user:email" } },
         }),
         CredentialsProvider({
             name: 'Credentials',
@@ -55,25 +56,28 @@ export const NEXT_AUTH_CONFIG = {
                     name: "asd",
                     userId: "asd",
                     email: "ramdomEmail"
-                }; 
+                };
             },
         }),
     ],
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
-        jwt: async ({ user, token }:any) => {
+        // async signIn:{
+        //     if()
+        // },
+        jwt: async ({ user, token }: any) => {
             if (user) {
                 token.uid = user.id;
             }
             return token;
         },
-        session: ({ session, user}:any) => {
+        session: ({ session, user }: any) => {
             console.log("Session :" + Object.keys(session.user));
-            console.log("user: " +Object.keys(user));
+            console.log("user: " + Object.keys(user));
             if (user.id) {
                 session.user.id = user.id;
-                console.log("session user id : "+ session.user.id);
+                console.log("session user id : " + session.user.id);
             }
             return session
         }
