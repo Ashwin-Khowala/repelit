@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Home, Info, FolderOpen, Plus, Code, Settings, User, ChevronLeft, ChevronRight, Terminal, Zap, Cloud } from "lucide-react";
+import { Home, Info, FolderOpen, Plus, Code, Settings, User, ChevronLeft, ChevronRight, Terminal, Zap, Cloud, LogOut } from "lucide-react";
 import { isSideBarCollapsedAtom } from "@/src/store/atoms/sideBarCollapsed";
 import { useAtom } from "jotai";
+import { signOut } from "next-auth/react";
 
 export default function AppBar() {
   // const [isSideBarCollapsedd, setisSideBarCollapsedd] = useState(false);
@@ -18,6 +19,18 @@ export default function AppBar() {
     { href: "/about", label: "About", icon: Info },
     { href: "/profile", label: "Profile", icon: User },
   ];
+
+  const handleLogout = async () => {
+    // Add your logout logic here
+    // For example: clearing tokens, redirecting to login, etc.
+    console.log("Logging out...");
+    await signOut();
+    
+    // Example logout implementation:
+    // localStorage.removeItem('authToken');
+    // router.push('/login');
+    // Or call your logout API
+  };
 
   return (
     <div className="flex ">
@@ -106,6 +119,26 @@ export default function AppBar() {
             );
           })}
         </nav>
+
+        {/* Logout Button */}
+        <div className="p-4">
+          <button
+            onClick={handleLogout}
+            className={`group relative flex items-center w-full ${isSideBarCollapsed ? 'justify-center p-3' : 'p-3'} rounded-lg transition-all duration-200 text-gray-400 hover:text-red-300 hover:bg-red-900/20 border border-transparent hover:border-red-500/30`}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            {!isSideBarCollapsed && (
+              <span className="ml-3 font-medium">Logout</span>
+            )}
+            
+            {/* Tooltip for collapsed state */}
+            {isSideBarCollapsed && (
+              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-gray-200 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none">
+                Logout
+              </div>
+            )}
+          </button>
+        </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-800/50 bg-gray-900/30">
