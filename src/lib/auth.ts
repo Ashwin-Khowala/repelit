@@ -35,6 +35,7 @@ export const NEXT_AUTH_CONFIG = {
                     name: profile.name,
                     email: profile.email,
                     image: profile.picture,
+                    accessToken: tokens.access_token
                 }
             },
         }),
@@ -52,22 +53,22 @@ export const NEXT_AUTH_CONFIG = {
                 }
             },
         }),
-        CredentialsProvider({
-            name: 'Credentials',
-            credentials: {
-                username: { label: 'email', type: 'text', placeholder: '' },
-                password: { label: 'password', type: 'password', placeholder: '' },
-            },
-            async authorize(credentials: any) {
+        // CredentialsProvider({
+        //     name: 'Credentials',
+        //     credentials: {
+        //         username: { label: 'email', type: 'text', placeholder: '' },
+        //         password: { label: 'password', type: 'password', placeholder: '' },
+        //     },
+        //     async authorize(credentials: any) {
 
-                return {
-                    id: "user1",
-                    name: "asd",
-                    userId: "asd",
-                    email: "ramdomEmail"
-                };
-            },
-        }),
+        //         return {
+        //             id: "user1",
+        //             name: "asd",
+        //             userId: "asd",
+        //             email: "ramdomEmail"
+        //         };
+        //     },
+        // }),
     ],
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXTAUTH_SECRET,

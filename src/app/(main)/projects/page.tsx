@@ -6,6 +6,7 @@ import { ProjectCard } from "@/src/components/projectComponent/ProjectCard";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ProjectCreationModal } from "@/src/components/Githubrepos";
+import { GitHubReposComponent } from "@/src/components/github/ListRepos";
 
 type Project = {
   projectName: string;
@@ -29,6 +30,7 @@ export default function Page() {
   const [isGitHubConnected, setIsGitHubConnected] = useState(false);
   const { data: session, status } = useSession();
   const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showGitHubRepos, setShowGitHubRepos] = useState(false);
   const router = useRouter();
 
   // Check GitHub connection status
@@ -145,12 +147,15 @@ export default function Page() {
     }
   };
 
+  // const handleImportFromGitHub = async () => {
+  //   try {
+  //     router.push('/github/import');
+  //   } catch (error) {
+  //     console.error('Failed to import from GitHub:', error);
+  //   }
+  // };
   const handleImportFromGitHub = async () => {
-    try {
-      router.push('/github/import');
-    } catch (error) {
-      console.error('Failed to import from GitHub:', error);
-    }
+    setShowGitHubRepos(true);
   };
 
   const handleCreateProject = () => {
@@ -160,6 +165,34 @@ export default function Page() {
   const handleCreateNewProject = () => {
     router.push('/create');
   }
+
+  const handleRepoImport = async (repo: any) => {
+    try {
+      // Call your API to import the repository
+      const response = await fetch('/api/import-github-repo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repoData: repo,
+          userId: session?.user.id
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the projects list
+        window.location.reload(); // or call your fetchProjects function
+        setShowGitHubRepos(false);
+      } else {
+        throw new Error('Failed to import repository');
+      }
+    } catch (error) {
+      console.error('Import failed:', error);
+      // Show error notification
+    }
+  };
+
 
   if (!session) {
     router.push('/signin');
@@ -240,92 +273,6 @@ export default function Page() {
                   }}
                 />
               </div>
-
-              {/* Dropdown Menu 
-              {/* {showGitHubOptions && ( 
-              //   <div className="absolute right-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-2xl z-50 overflow-hidden">
-              //     <div className="p-2">
-              //       
-              //       <button
-              //         onClick={handleCreateNewProject}
-              //         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800/50 rounded-lg transition-all duration-200 group cursor-pointer"
-              //       >
-              //         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              //           <Plus className="w-4 h-4 text-white" />
-              //         </div>
-              //         <div>
-              //           <div className="text-gray-100 font-medium">Create New Project</div>
-              //           <div className="text-gray-400 text-xs">Start from scratch</div>
-              //         </div>
-              //       </button>
-
-              //
-              //       <div className="border-t border-gray-700/50 my-2"></div>
-
-              //       
-              //       {!isGitHubConnected && (
-              //         <button
-              //           onClick={handleConnectGitHub}
-              //           className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800/50 rounded-lg transition-all duration-200 group cursor-pointer"
-              //         >
-              //           <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center border border-gray-600/50">
-              //             <Github className="w-4 h-4 text-white" />
-              //           </div>
-              //           <div>
-              //             <div className="text-gray-100 font-medium">Connect with GitHub</div>
-              //             <div className="text-gray-400 text-xs">Link your GitHub account</div>
-              //           </div>
-              //         </button>
-              //       )}
-
-              //       
-              //       <button
-              //         onClick={handleImportFromGitHub}
-              //         disabled={!isGitHubConnected}
-              //         className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 group cursor-pointer ${isGitHubConnected
-              //           ? 'hover:bg-gray-800/50'
-              //           : 'opacity-50 cursor-not-allowed'
-              //           }`}
-              //       >
-              //         <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isGitHubConnected
-              //           ? 'bg-gradient-to-br from-green-600 to-emerald-600 border-green-500/50'
-              //           : 'bg-gray-800 border-gray-600/50'
-              //           }`}>
-              //           <Download className="w-4 h-4 text-white" />
-              //         </div>
-              //         <div>
-              //           <div className="text-gray-100 font-medium">Import from GitHub</div>
-              //           <div className="text-gray-400 text-xs">
-              //             {isGitHubConnected ? 'Import existing repositories' : 'Connect GitHub first'}
-              //           </div>
-              //         </div>
-              //       </button>
-
-              //       
-              //       <button
-              //         // onClick={handleCloneRepository}
-              //         disabled={!isGitHubConnected}
-              //         className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 group cursor-pointer ${isGitHubConnected
-              //           ? 'hover:bg-gray-800/50'
-              //           : 'opacity-50 cursor-not-allowed'
-              //           }`}
-              //       >
-              //         <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isGitHubConnected
-              //           ? 'bg-gradient-to-br from-orange-600 to-red-600 border-orange-500/50'
-              //           : 'bg-gray-800 border-gray-600/50'
-              //           }`}>
-              //           <GitBranch className="w-4 h-4 text-white" />
-              //         </div>
-              //         <div>
-              //           <div className="text-gray-100 font-medium">Clone Repository</div>
-              //           <div className="text-gray-400 text-xs">
-              //             {isGitHubConnected ? 'Clone any public repository' : 'Connect GitHub first'}
-              //           </div>
-              //         </div>
-              //       </button>
-              //     </div>
-              //   </div>
-              // )} */}
             </div>
           </div>
         </div>
@@ -459,6 +406,13 @@ export default function Page() {
               </div>}
           </div>
         )}
+      </div>
+      <div>
+        <GitHubReposComponent
+          isOpen={showGitHubRepos}
+          onClose={() => setShowGitHubRepos(false)}
+          onImport={handleRepoImport}
+        />
       </div>
     </div>
   );

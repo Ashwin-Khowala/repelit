@@ -5,11 +5,11 @@ import { useAtomValue } from "jotai";
 
 
 export default function page() {
-    
-        const isCollapsed = useAtomValue(isSideBarCollapsedAtom);
+
+  const isCollapsed = useAtomValue(isSideBarCollapsedAtom);
   return (
-    <div className={`${isCollapsed ? 'w-[94vw]' : 'w-[81vw]' } overflow-hidden scroll-smooth`}>
-        <GitHubImportPage />
+    <div className={`${isCollapsed ? 'w-[94vw]' : 'w-[81vw]'} overflow-hidden scroll-smooth`}>
+      <GitHubImportPage />
     </div>
   )
 }

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 
-export async function POST(req: NextRequest, res: NextResponse) {
+export async function POST(req: NextRequest) {
     const body = await req.json();
     const { userId } = body;
+
+    if(!userId) return NextResponse.json({msg:"User Id not found "},{status:402});
 
     const result = await prisma.account.findFirst({
         where: {
