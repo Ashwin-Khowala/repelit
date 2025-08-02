@@ -10,6 +10,8 @@ declare module "next-auth" {
     interface Session {
         user: {
             id: string;
+            accessToken: string;
+            login?: string;
         } & DefaultSession["user"];
     }
 
@@ -44,12 +46,14 @@ export const NEXT_AUTH_CONFIG = {
             clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
             authorization: { params: { scope: "read:user user:email" } },
             profile(profile, tokens) {
+                // console.log("providers :", profile ,tokens);
                 return {
                     id: String(profile.id),
                     name: profile.name,
                     email: profile.email,
                     image: profile.avatar_url,
-                    accessToken: tokens.access_token
+                    accessToken: tokens.access_token,
+                    login: profile.login
                 }
             },
         }),
@@ -74,6 +78,7 @@ export const NEXT_AUTH_CONFIG = {
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
         jwt: async ({ user, token, account }: any) => {
+            // console.log("jwt :", user,token,account);
             if (user) {
                 token.uid = user.id;
             }
@@ -83,9 +88,11 @@ export const NEXT_AUTH_CONFIG = {
             return token;
         },
         session: ({ session, user}: any) => {
+            // console.log("session :", user,session);
             if (user.id) {
                 session.user.id = user.id;
                 session.user.accessToken = user.accessToken;
+                session.user.login = user.login;
             }
             return session
         }

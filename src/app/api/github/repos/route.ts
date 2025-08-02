@@ -43,21 +43,3 @@ export async function GET(req: NextRequest) {
         );
     }
 }
-
-export async function getUserRepos(username: string, accessToken: string) {
-    const octokit = new Octokit({
-        auth: accessToken
-    });
-
-    const getRepos = await octokit.request('GET /users/{username}/repos', {
-        username: username,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        },
-        sort: 'updated',
-        per_page: 100,
-        type: 'all'
-    });
-
-    return getRepos.data;
-}

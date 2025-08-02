@@ -26,7 +26,6 @@ export default function Page() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // const [showGitHubOptions, setShowGitHubOptions] = useState(false);
   const [isGitHubConnected, setIsGitHubConnected] = useState(false);
   const { data: session, status } = useSession();
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -147,13 +146,6 @@ export default function Page() {
     }
   };
 
-  // const handleImportFromGitHub = async () => {
-  //   try {
-  //     router.push('/github/import');
-  //   } catch (error) {
-  //     console.error('Failed to import from GitHub:', error);
-  //   }
-  // };
   const handleImportFromGitHub = async () => {
     setShowGitHubRepos(true);
   };
@@ -169,14 +161,13 @@ export default function Page() {
   const handleRepoImport = async (repo: any) => {
     try {
       // Call your API to import the repository
-      const response = await fetch('/api/import-github-repo', {
+      const response = await fetch('/api/github/getRepo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          repoData: repo,
-          userId: session?.user.id
+          githubRepo: repo.name
         }),
       });
 
@@ -194,7 +185,7 @@ export default function Page() {
   };
 
 
-  if (!session) {
+  if(status == "unauthenticated") {
     router.push('/signin');
   }
   // loading skeleton 
