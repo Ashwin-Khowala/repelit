@@ -24,12 +24,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Project, User } from "@/src/types";
-import { userSessionAtom } from "@/src/store/atoms/userId";
-import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
-// import dynamic from "next/dynamic";
-// const TimeComponent = dynamic(()=>import("../../../components/TimeComponent"));
-
 
 async function userProjectsFetch(): Promise<Project[]> {
   try {
@@ -62,14 +57,14 @@ export default function HomePage() {
 
   const [recentProjects, setRecentProjects] = useState<Project[] | null>(null);
   const [userDetails, setUserDetails] = useState<User | null>(null);
-
+  const { status } = useSession();
+  const router = useRouter();
   const [quickActions] = useState([
     { title: "Create React App", desc: "Modern React with TypeScript", icon: Code, color: "from-blue-500 to-cyan-500" },
     { title: "Node.js API", desc: "RESTful API with Express", icon: Database, color: "from-green-500 to-emerald-500" },
     { title: "Python ML", desc: "Machine learning workspace", icon: Cpu, color: "from-purple-500 to-pink-500" },
     { title: "Next.js Full Stack", desc: "Full-stack application", icon: Globe, color: "from-orange-500 to-red-500" }
   ]);
-
   const [achievements] = useState([
     { title: "Code Ninja", desc: "100+ projects created", icon: Award, unlocked: true },
     { title: "Speed Demon", desc: "Deploy in under 30s", icon: Zap, unlocked: true },
@@ -77,17 +72,12 @@ export default function HomePage() {
     { title: "Marathon Coder", desc: "24hr coding streak", icon: Coffee, unlocked: false }
   ]);
 
-  const { status } = useSession();
-  const router = useRouter();
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/signin");
     }
 
   }, [status, router]);
-
-
 
   // Animate stats on load
   useEffect(() => {
@@ -125,7 +115,6 @@ export default function HomePage() {
     animateStats();
   }, [userDetails]);
 
-
   //fetches user details
   useEffect(() => {
     userDetailsFetch()
@@ -140,9 +129,18 @@ export default function HomePage() {
       .catch(err => console.error(err));
   }, []);
 
-  const setUserId = useSetAtom(userSessionAtom);
-  setUserId(userDetails?.id ?? "");
-  console.log(useAtomValue(userSessionAtom));
+  // Loading Skeleton
+  if (status == "loading") return <div className="p-8 min-h-screen bg-gray-950 w-[82vw]">
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-800/50 rounded w-48 mb-6"></div>
+      <div className="h-20 bg-gray-800/50 rounded mb-6"></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-48 bg-gray-800/50 rounded-lg border border-gray-800/50"></div>
+        ))}
+      </div>
+    </div>
+  </div>
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -158,7 +156,8 @@ export default function HomePage() {
       'React': 'text-blue-400 bg-blue-400/20 border-blue-400/30',
       'Python': 'text-yellow-400 bg-yellow-400/20 border-yellow-400/30',
       'Node.js': 'text-green-400 bg-green-400/20 border-green-400/30',
-      'TypeScript': 'text-blue-400 bg-blue-400/20 border-blue-400/30'
+      'TypeScript': 'text-blue-400 bg-blue-400/20 border-blue-400/30',
+      "Github Imported": 'text-blue-400 bg-blue-400/20 border-blue-400/30'
     };
     return colors[lang as keyof typeof colors] || 'text-gray-400 bg-gray-400/20 border-gray-400/30';
   };
@@ -309,8 +308,8 @@ export default function HomePage() {
                           {project.projectName}
                         </h3>
                         <div className="flex items-center gap-2 text-sm">
-                          <span className={`px-2 py-1 rounded-md text-xs border ${getLanguageColor(project.language || "")}`}>
-                            {project.language}
+                          <span className={`px-2 py-1 rounded-md text-xs border ${getLanguageColor(project.language == "" ? "Github Imported" : project.language)}`}>
+                            {project.language == "" ? "Github Project" : project.language}
                           </span>
                           <span className="text-gray-400">{String(project.lastModified)}</span>
                         </div>

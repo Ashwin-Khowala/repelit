@@ -21,24 +21,16 @@ export default function AppBar() {
   ];
 
   const handleLogout = async () => {
-    // Add your logout logic here
-    // For example: clearing tokens, redirecting to login, etc.
-    console.log("Logging out...");
     await signOut();
-    
-    // Example logout implementation:
-    // localStorage.removeItem('authToken');
-    // router.push('/login');
-    // Or call your logout API
   };
 
   return (
     <div className="flex ">
       {/* Animated background gradient */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-900/10 via-purple-900/5 to-green-900/10 pointer-events-none"></div>
-      
+
       <div className={`flex flex-col ${isSideBarCollapsed ? 'w-20' : 'w-[18vw]'} h-screen bg-gray-950/95 backdrop-blur-xl border-r border-gray-800/50 transition-all duration-300 relative z-10`}>
-        
+
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800/50 bg-gray-900/50">
           {!isSideBarCollapsed && (
@@ -51,13 +43,13 @@ export default function AppBar() {
               </h1>
             </div>
           )}
-          
+
           {isSideBarCollapsed && (
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg mx-auto">
               <Terminal className="w-5 h-5 text-white" />
             </div>
           )}
-          
+
           <button
             onClick={() => {
               // setisSideBarCollapsedd(!isSideBarCollapsedd);
@@ -87,28 +79,27 @@ export default function AppBar() {
           {navItems.map((item) => {
             const IconComponent = item.icon;
             const isActive = activeItem === item.href;
-            
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setActiveItem(item.href)}
-                className={`group relative flex items-center ${isSideBarCollapsed ? 'justify-center p-3' : 'p-3'} rounded-lg transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30 shadow-lg' 
-                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 border border-transparent'
-                }`}
+                className={`group relative flex items-center ${isSideBarCollapsed ? 'justify-center p-3' : 'p-3'} rounded-lg transition-all duration-200 ${isActive
+                  ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30 shadow-lg'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 border border-transparent'
+                  }`}
               >
                 <IconComponent className="w-5 h-5 flex-shrink-0" />
                 {!isSideBarCollapsed && (
                   <span className="ml-3 font-medium">{item.label}</span>
                 )}
-                
+
                 {/* Active indicator */}
                 {isActive && (
                   <div className="absolute left-0 w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-400 rounded-r-full"></div>
                 )}
-                
+
                 {/* Tooltip for collapsed state */}
                 {isSideBarCollapsed && (
                   <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-gray-200 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none">
@@ -130,7 +121,7 @@ export default function AppBar() {
             {!isSideBarCollapsed && (
               <span className="ml-3 font-medium">Logout</span>
             )}
-            
+
             {/* Tooltip for collapsed state */}
             {isSideBarCollapsed && (
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-gray-200 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none">
