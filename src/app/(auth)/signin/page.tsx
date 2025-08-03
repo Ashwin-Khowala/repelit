@@ -4,17 +4,27 @@ import { InputBox } from "@/src/components/ui/InputBox";
 import Link from "next/link";
 import { GithubButton, GoogleButton } from "@/src/components/auth_buttons";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation"; 
+import { useEffect } from "react";
 
 export default function Signup() {
     const { data: session, status } = useSession();
+    const router = useRouter(); 
+
+    useEffect(() => {
+        if (session) {
+            router.push('/home');
+        }
+    }, [session, router]);
+
     if (status === "loading") {
         return <div>Loading...</div>;
     }
+
     if (session) {
-        // If the user is already logged in, redirect them to the home page
-        window.location.href = "/home";
-        return null;
+        return <div>Redirecting...</div>;
     }
+
     return (
         <div className="grid grid-cols-2 h-screen">
             <div className="relative col-span-1 bg-white ">
@@ -42,7 +52,7 @@ export default function Signup() {
                             <span className="w-full">Log In</span>
                         </button>
                     </div>
-                    {/* {add the different signiin buttons } */}
+                    
                     <div className="w-full flex justify-center">
                         <hr className="h-px my-4 bg-gray-200 border-0 w-lg "></hr>
                     </div>

@@ -24,8 +24,9 @@ export async function GET(req: NextRequest) {
             per_page: 100, 
             type: 'all'
         });
-
-        console.log(`Found ${getRepos.data.length} repositories`);
+        
+        // console.log(getRepos.data);
+        // console.log(`Found ${getRepos.data.length} repositories`);
         
         return NextResponse.json({
             repositories: getRepos.data,
