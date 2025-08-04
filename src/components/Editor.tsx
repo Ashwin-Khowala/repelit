@@ -1,4 +1,7 @@
-import { CompletionRegistration, registerCompletion } from 'monacopilot';
+import { Monaco } from '@monaco-editor/react';
+import { CompletionRegistration, registerCompletion,type Monaco as Monacopilot,
+    type StandaloneCodeEditor
+ } from 'monacopilot';
 import dynamic from 'next/dynamic';
 import { useState, useRef, useCallback } from 'react';
 
@@ -39,6 +42,11 @@ export function MonacoEditor({
     const [peekContent, setPeekContent] = useState('');
     const [breadcrumbs, setBreadcrumbs] = useState<string[]>([]);
 
+    const [activeFileId, setActiveFileId] = useState('default');
+    const editorRef = useRef<any>(null);
+    const monacoRef = useRef<any>(null);
+    const completionRef = useRef<CompletionRegistration | null>(null);
+
     // Multi-file support
     const [files, setFiles] = useState<FileTab[]>(() => {
         const defaultFile: FileTab = {
@@ -59,10 +67,6 @@ export function MonacoEditor({
         return [defaultFile, ...additionalFiles];
     });
 
-    const [activeFileId, setActiveFileId] = useState('default');
-    const editorRef = useRef<any>(null);
-    const monacoRef = useRef<any>(null);
-    const completionRef = useRef<CompletionRegistration | null>(null);
 
     const activeFile = files.find(f => f.id === activeFileId) || files[0];
 
@@ -107,7 +111,6 @@ export function MonacoEditor({
             completionRef.current = null;
         }
 
-        // Register new completion if enabled
         if (useAiSuggestion) {
             completionRef.current = registerCompletion(monaco, editor, {
                 endpoint: '/api/code-completion',
@@ -128,7 +131,7 @@ export function MonacoEditor({
             const position = e.position;
             const lineContent = model.getLineContent(position.lineNumber);
 
-            // Simple breadcrumb extraction (can be enhanced based on language)
+            // Simple breadcrumb extraction
             const crumbs = extractBreadcrumbs(lineContent, activeFile.language, position);
             setBreadcrumbs(crumbs);
         });
@@ -383,11 +386,9 @@ export function MonacoEditor({
                 showKeywords: true,
                 showSnippets: true,
             },
-            // Enable breadcrumbs
             breadcrumbs: {
                 enabled: true,
             },
-            // Enable minimap by default
             minimap: {
                 enabled: true,
             },
