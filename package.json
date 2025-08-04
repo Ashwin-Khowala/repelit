@@ -28,6 +28,7 @@
     "express": "^5.1.0",
     "jotai": "^2.12.5",
     "lucide-react": "^0.511.0",
+    "monacopilot": "^1.2.7",
     "next": "15.2.3",
     "next-auth": "^4.24.11",
     "node-pty": "^1.0.0",
