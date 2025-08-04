@@ -566,8 +566,8 @@ export function MonacoEditor({
                         <div
                             key={file.id}
                             className={`flex items-center px-4 py-2 border-r border-[#30363D] cursor-pointer min-w-0 group ${activeFileId === file.id
-                                    ? 'bg-[#0D1117] text-[#E6EDF3]'
-                                    : 'bg-[#161B22] text-[#7D8590] hover:text-[#E6EDF3]'
+                                ? 'bg-[#0D1117] text-[#E6EDF3]'
+                                : 'bg-[#161B22] text-[#7D8590] hover:text-[#E6EDF3]'
                                 }`}
                             onClick={() => handleFileChange(file.id)}
                         >
