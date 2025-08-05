@@ -112,7 +112,7 @@ export const TerminalComponent = ({ socket }: { socket: Socket }) => {
     return (
         <div 
             ref={containerRef}
-            className="relative w-full max-w-4xl mx-auto h-full overflow-y-scroll"
+            className="relative w-full max-w-4xl mx-auto h-screen overflow-hidden"
             style={{ minHeight: '500px' }}
         >
             {/* Terminal Header */}

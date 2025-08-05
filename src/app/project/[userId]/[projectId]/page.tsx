@@ -157,7 +157,7 @@ export default function EditorPage() {
   useEffect(() => {
     const replId = sanitizeK8sName(`${userId}-${projectId}`);
     const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const newSocket = io(`${wsProtocol}//${replId}.code.ashwinkhowala.com`, { transports: ['websocket'] });
+    const newSocket = io(`${wsProtocol}//${replId}.ws.10xdevs.fun`, { transports: ['websocket'] });
     setSocket(newSocket);
     console.log("Connecting to socket server...");
     newSocket.on("connect", () => {
@@ -336,10 +336,11 @@ export default function EditorPage() {
               fileName={SelectedFile?.name || "Untitled"}
               language={SelectedFile?.name.split('.').pop() || "text"}
               value={SelectedFile?.content || ""}
-              //@ts-ignore
-              onChange={debounce((value) => {
-                socket.emit("updateContent", { path: SelectedFile?.path, content: value });
-              }, 500)}
+              onChange={
+                debounce((value) => {
+                  socket.emit("updateContent", { path: SelectedFile?.path, content: value });
+                }, 500)
+              }
             />
           </div>
         </Panel>
@@ -348,7 +349,7 @@ export default function EditorPage() {
 
         {/* Terminal Panel */}
         <Panel defaultSize={30} minSize={20}>
-          <div className="h-[100vh]">
+          <div className="h-[100vh] overflow-hidden">
             <TerminalComponent socket={socket} />
           </div>
         </Panel>

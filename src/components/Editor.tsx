@@ -1,9 +1,8 @@
-import { Monaco } from '@monaco-editor/react';
-import { CompletionRegistration, registerCompletion,type Monaco as Monacopilot,
-    type StandaloneCodeEditor
- } from 'monacopilot';
+import {
+    CompletionRegistration, registerCompletion
+} from 'monacopilot';
 import dynamic from 'next/dynamic';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const Editor = dynamic(() => import('@monaco-editor/react'), {
     ssr: false,
@@ -33,11 +32,11 @@ export function MonacoEditor({
     fileName?: string;
     language: string;
     value?: string;
-    onChange?: (value: string | undefined) => void;
+    onChange?: (value: string) => void;
     initialFiles?: Omit<FileTab, 'id' | 'isDirty'>[];
 }) {
     const [isLoading, setIsLoading] = useState(true);
-    const [useAiSuggestion, setUseAiSuggestion] = useState<boolean>(false);
+    const [useAiSuggestion, setUseAiSuggestion] = useState<boolean>(true);
     const [showPeekPanel, setShowPeekPanel] = useState(false);
     const [peekContent, setPeekContent] = useState('');
     const [breadcrumbs, setBreadcrumbs] = useState<string[]>([]);
@@ -51,7 +50,7 @@ export function MonacoEditor({
     const [files, setFiles] = useState<FileTab[]>(() => {
         const defaultFile: FileTab = {
             id: 'default',
-            name: fileName || 'untitled',
+            name: fileName || '',
             language,
             content: value || '',
             isDirty: false,
@@ -110,6 +109,7 @@ export function MonacoEditor({
             // completionRef.current.dispose();
             completionRef.current = null;
         }
+        console.log("from ai completion");
 
         if (useAiSuggestion) {
             completionRef.current = registerCompletion(monaco, editor, {
@@ -534,21 +534,40 @@ export function MonacoEditor({
         setFiles(updatedFiles);
 
         if (onChange && activeFileId === 'default') {
-            onChange(newValue);
+            onChange(newValue || "");
         }
     }, [files, activeFileId, onChange]);
 
+
+
     const addNewFile = () => {
+        // checks if file is already opened or not 
+        const existingFile = files.find(f => f.path === fileName || f.name === fileName);
+        if (existingFile) {
+            // If file exists, just switch to it
+            setActiveFileId(existingFile.id);
+            return;
+        }
+
+        // If file doesn't exist, create a new tab
         const newFile: FileTab = {
             id: `file-${Date.now()}`,
-            name: `untitled-${files.length}`,
-            language: 'javascript',
-            content: '',
-            isDirty: false
+            name: fileName || "",
+            language: language,
+            content: value || "",
+            isDirty: false,
+            path: fileName
         };
         setFiles([...files, newFile]);
         setActiveFileId(newFile.id);
     };
+
+    // When fileName changes, open or switch to the file
+    useEffect(() => {
+        if (fileName) {
+            addNewFile();
+        }
+    }, [fileName]);
 
     const toggleAiSuggestion = () => {
         setUseAiSuggestion(!useAiSuggestion);
@@ -558,7 +577,7 @@ export function MonacoEditor({
     };
 
     return (
-        <div className="relative w-full h-full bg-[#141414] border border-[#30363D] rounded-lg overflow-hidden">
+        <div className="relative w-full h-screen bg-[#141414] border border-[#30363D] rounded-lg overflow-hidden">
             {/* Header with tabs */}
             <div className="bg-[#161B22] border-b border-[#30363D]">
                 {/* File tabs */}
@@ -573,8 +592,8 @@ export function MonacoEditor({
                             onClick={() => handleFileChange(file.id)}
                         >
                             <span className="text-sm font-medium truncate max-w-32">
-                                {file.name}
-                                {file.isDirty && <span className="ml-1 text-[#F85149]">•</span>}
+                                {file.path}
+                                {/* {file.isDirty && <span className="ml-1 text-[#F85149]">•</span>} */}
                             </span>
                             {files.length > 1 && (
                                 <button
@@ -674,8 +693,13 @@ export function MonacoEditor({
                         height="100%"
                         language={getLanguageForMonaco(activeFile.language)}
                         value={activeFile.content}
-                        onChange={handleContentChange}
-                        onMount={handleEditorDidMount}
+                        onChange={(value, ev) => {
+                            onChange?.(value ?? "");
+                            handleContentChange(value);
+                        }}
+                        onMount={
+                            handleEditorDidMount
+                        }
                         loading={null}
                         options={{
                             theme: 'customDark',
@@ -710,7 +734,7 @@ export function MonacoEditor({
             {/* Enhanced status bar */}
             <div className="h-6 bg-[#161B22] border-t border-[#30363D] flex items-center justify-between px-4 text-xs text-[#7D8590]">
                 <div className="flex items-center space-x-4">
-                    <span>Language: {activeFile.language}</span>
+                    <span>Language: {(activeFile.language)}</span>
                     <span>Encoding: UTF-8</span>
                     <span>File: {activeFile.name}</span>
                 </div>
