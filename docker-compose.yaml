@@ -9,9 +9,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # Only preserve node_modules to avoid reinstallation
       - /usr/src/app/node_modules
-      # Remove the .next volume that was causing issues
     command: ["npm", "run", "start"]
     develop:
       watch:
