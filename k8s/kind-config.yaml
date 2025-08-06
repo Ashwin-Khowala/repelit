@@ -12,6 +12,6 @@ nodes:
   - role: worker
     extraPortMappings:
       - containerPort: 3000
-        hostPort: 3000
+        hostPort: 3005
       - containerPort: 3001
-        hostPort: 3001
+        hostPort: 3006
